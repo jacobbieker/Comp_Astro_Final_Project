@@ -27,9 +27,6 @@ class BinaryBlackHole(object):
         """
         raise NotImplementedError
 
-    def evolve_model(self):
-        raise NotImplementedError
-
     def get_orbital_period(self, orbital_separation, total_mass):
         return 2 * np.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()
 
@@ -40,4 +37,13 @@ class BinaryBlackHole(object):
         raise NotImplementedError
 
     def center_of_mass_velocity(self):
+        raise NotImplementedError
+
+    def set_binary_location_and_velocity(self, center_of_mass, center_of_mass_velocity):
+        raise NotImplementedError
+
+    def set_merge_conditions(self):
+        raise NotImplementedError
+
+    def merge_particles(self):
         raise NotImplementedError

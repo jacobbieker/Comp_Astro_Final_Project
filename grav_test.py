@@ -158,6 +158,13 @@ def main():
     plt.plot([i[0] for i in x], [i[0] for i in y])
     plt.plot([i[1] for i in x], [i[1] for i in y])
     plt.show()
+    cm_y = np.asarray(cm_y)
+    cm_x = np.asarray(cm_x)
+    distances = (cm_x - bodies[0].x.value_in(units.AU))**2 + (cm_y - bodies[0].y.value_in(units.AU))**2
+    print(min(distances))
+    plt.plot([i for i in range(len(distances))], distances)
+    plt.show()
+    print(distances[distances <= ((2*constants.G*bodies[0].mass)/(constants.c**2))])
     plt.plot(cm_x, cm_y)
     plt.scatter(bh_x, bh_y, c='g', s=500)
     plt.show()
