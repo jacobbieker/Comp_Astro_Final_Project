@@ -67,7 +67,7 @@ def new_option_parser():
 	result.add_option("--M_tot", unit = units.MSun, dest="Mtot", type="float",
 					  default = 10 | units.MSun,
 					  help="Total disk mass [%default]")
-	result.add_option("--Rvir", unit = units.parsec, dest="Rvir", type="float",
+	result.add_option("--Rvir", unit = units.AU, dest="Rvir", type="float",
 					  default = 100 | units.AU,
 					  help="Radius of initial sphere [%default]")
 	result.add_option("--t_end", unit = units.yr, dest="t_end", type="float",
