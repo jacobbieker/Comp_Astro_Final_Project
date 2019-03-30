@@ -1,4 +1,5 @@
 from amuse.lab import *
+from amuse.community.gadget2.interface import Gadget2
 from matplotlib import pyplot as plt
 
 
@@ -25,7 +26,13 @@ def main(N, Mtot, Rvir, t_end):
 	Etot_init = hydro.kinetic_energy \
 	+ hydro.potential_energy + hydro.thermal_energy
 
-	hydro.evolve_model(t_end)
+	time = 0 | units.yr
+	dt = 10 | units.yr
+	while time < t_end:
+		time += dt
+		hydro.evolve_model(time)
+		print time
+
 
 	write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
 
