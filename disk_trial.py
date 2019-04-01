@@ -1,6 +1,7 @@
 from amuse.lab import *
 from amuse.community.gadget2.interface import Gadget2
 from matplotlib import pyplot as plt
+import numpy  as np
 
 
 
@@ -10,8 +11,47 @@ def gas_sphere(N, Mtot, Rvir):
 	gas = new_plummer_gas_model(N, convert_nbody=converter)
 	return gas, converter
 
+#
+#
+def make_map(hydro, grid_points=100, L=1):
+    x,y=np.indices(( grid_points+1,grid_points+1 ))
 
+    x=L*(x.flatten()-grid_points/2.)/grid_points
+    y=L*(y.flatten()-grid_points/2.)/grid_points
+    z=x*0.
+    vx=0.*x
+    vy=0.*x
+    vz=0.*x
 
+    x=units.parsec(x)
+    y=units.parsec(y)
+    z=units.parsec(z)
+    vx=units.kms(vx)
+    vy=units.kms(vy)
+    vz=units.kms(vz)
+
+    rho,rhovx,rhovy,rhovz,rhoe=hydro.get_hydro_state_at_point(x,y,z,vx,vy,vz)
+    rho=rho.reshape((grid_points+1,grid_points+1))
+
+    return rho
+#
+#
+# def plot_hydro(time, sph, i, L=10):
+#     x_label = "x [pc]"
+#     y_label = "y [pc]"
+#     # fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12)
+#
+# 	fig=pyplot.figure(figsize=(12,12))
+#
+#     rho=make_map(sph,N=200,L=L)
+#     pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
+#     pyplot.savefig("GMC_"+str(i)+".png")
+# #    subplot.set_title("GMC at zero age")
+# #pyplot.title("Molecular cloud at time="+time.as_string_in(units.Myr))
+# #pyplot.xlabel("x [pc]")
+# #pyplot.ylabel("x [pc]")
+# #pyplot.title("GMC at time="+time.as_string_in(units.Myr))
+# #pyplot.savefig("GMC_"+str(i)+".png")
 
 
 
@@ -46,15 +86,31 @@ def main(N, Mtot, Rvir, t_end, dt):
 	print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(),
 	print "E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun)
 
-	hydro.stop()
+
 
 	x_gas = gas.x.value_in(units.AU)
 	y_gas = gas.y.value_in(units.AU)
 	z_gas = gas.z.value_in(units.AU)
 
-	plt.scatter(x_gas, y_gas, z_gas)
-	plt.savefig('disk_scatter.png')
+
+
+
+
+	z_0 = 0. * x_gas
+	vx_gas = (0. | (units.Hz)) * x_gas
+	vy_gas = (0. | (units.Hz)) * x_gas
+	vz_gas = (0. | (units.Hz)) * x_gas
+
+	rho = make_map(hydro)
+
+	plt.imshow(np.log10(1.e-5+rho.value_in(units.amu/units.cm**3)))
+	plt.savefig('density_map.pdf')
 	plt.show()
+
+	hydro.stop()
+	# plt.scatter(x_gas, y_gas, z_gas)
+	# plt.savefig('disk_scatter.png')
+	# plt.show()
 
 def new_option_parser():
 	from amuse.units.optparse import OptionParser
@@ -67,7 +123,7 @@ def new_option_parser():
 					  default = 10 | units.MSun,
 					  help="Total disk mass [%default]")
 	result.add_option("--Rvir", unit = units.AU, dest="Rvir", type="float",
-					  default = 100 | units.AU,
+					  default = 10000 | units.AU,
 					  help="Radius of initial sphere [%default]")
 	result.add_option("--t_end", unit = units.yr, dest="t_end", type="float",
 					  default = 1000 | units.yr,
