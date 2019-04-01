@@ -17,7 +17,7 @@ def gas_sphere(N, Mtot, Rvir):
 
 
 
-def main(N, Mtot, Rvir, t_end):
+def main(N, Mtot, Rvir, t_end, dt):
 	gas, converter = gas_sphere(N, Mtot, Rvir)
 
 	hydro = Gadget2(converter)
@@ -27,7 +27,6 @@ def main(N, Mtot, Rvir, t_end):
 	+ hydro.potential_energy + hydro.thermal_energy
 
 	time = 0 | units.yr
-	dt = 10 | units.yr
 	while time < t_end:
 		time += dt
 		hydro.evolve_model(time)
@@ -73,7 +72,9 @@ def new_option_parser():
 	result.add_option("--t_end", unit = units.yr, dest="t_end", type="float",
 					  default = 1000 | units.yr,
 					  help="End time of simulation [%default]")
-
+	result.add_option("--dt", unit = units.yr, dest="dt", type="float",
+					  default = 10 | units.yr,
+					  help="Hydro timestep [%default]")
 	return result
 
 
