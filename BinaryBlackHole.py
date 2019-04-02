@@ -93,6 +93,35 @@ class BinaryBlackHole(object):
     def set_merge_conditions(self):
         raise NotImplementedError
 
+    def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
+                                              semi_major_axis, mean_anomaly=0, inclination=0,
+                                              argument_of_perhilion=0, longitude_of_ascending_node=0,
+                                              time_to_advance=5 | units.day):
+        """
+        Sets the binary's orbit around the supermassive central blackhole
+        :param central_blackhole:
+        :param eccentricity:
+        :param semi_major_axis:
+        :param mean_anomaly:
+        :param inclination:
+        :param argument_of_perhilion:
+        :param longitude_of_ascending_node:
+        :param time_to_advance:
+        :return:
+        """
+
+        binary_orbital_position, binary_orbital_velocity = get_position(central_blackhole.mass,
+                                                                       self.blackholes.mass.sum(),
+                                                                       ecc=eccentricity,
+                                                                       semi=semi_major_axis,
+                                                                       mean_anomaly=mean_anomaly,
+                                                                       incl=inclination,
+                                                                       argument=argument_of_perhilion,
+                                                                       longitude=longitude_of_ascending_node,
+                                                                       delta_t=time_to_advance)
+
+        self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
+
     def merge_particles(self):
         """
         Merges the binary particles into a single particle, with the
