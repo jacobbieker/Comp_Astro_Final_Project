@@ -15,9 +15,11 @@ class BinaryBlackHolesWithAGN(object):
                  radiative_transfer=False, timestep=0.1 | units.Myr, converter=None, number_of_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
+        self.inner_boundary = (self.smbh.radius.value_in(units.parsec)) * 2
+        self.outer_buondary = (self.smbh.radius.value_in(units.parsec)) * 100
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
-                                  disk_min=(self.smbh.radius.value_in(units.parsec)) * 2,
-                                  disk_max=(self.smbh.radius.value_in(units.parsec)) * 100,
+                                  disk_min=self.inner_boundary,
+                                  disk_max=self.outer_buondary,
                                   number_of_workers=number_of_workers,
                                   converter=converter,
                                   powerlaw=disk_powerlaw)
@@ -67,13 +69,18 @@ class BinaryBlackHolesWithAGN(object):
         # Now only use those outer particle positions to generate the binaries,
         # since nothing is within 2 radii of the black hole
 
-        for particle in outer_particles:
+        for i in self.number_of_binaries:
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
             binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
                                      orbital_period=1 | units.yr,
                                      eccentricity=np.random.uniform(0.0, 0.99, size=1),
                                      inclincation=np.random.uniform(0.0, 90.0, size=1))
-            binary.set_binary_location_and_velocity(particle.center_of_mass, particle.center_of_mass_velocity)
+
+            binary.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
+                                                         eccentricity=np.random.uniform(0.0, 0.99, size=1),
+                                                         inclination=np.random.uniform(0.0, 90.0, size=1),
+                                                         semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_buondary, size=1) | units.parsec,
+                                                         )
             self.binaries.add_particles(binary)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
