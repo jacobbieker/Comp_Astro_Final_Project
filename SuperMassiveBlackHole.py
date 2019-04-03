@@ -23,14 +23,16 @@ class SuperMassiveBlackHole(object):
         """
         Needs the accretion disk to start at 2 times the scwarzchild radius, and goes out to 10 radii
 
-        Binaries start outside of 2 radii
+        Binaries start outside of 2 radii, just select the ones outside this to add them
+
+        100 times schwarzhild radius
 
 
         :return:
         """
 
         self.disk = AccretionDisk(disk_min=2*(self.radius.value_in(units.parsec)),
-                                  disk_max=10*(self.radius.value_in(units.parsec)),
+                                  disk_max=100*(self.radius.value_in(units.parsec)),
                                   fraction_of_central_blackhole_mass=self.fraction_in_disk,
                                   )
 
