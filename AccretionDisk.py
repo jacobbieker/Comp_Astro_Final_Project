@@ -29,6 +29,8 @@ class AccretionDisk(object):
         self.powerlaw = powerlaw
         self.gas_particles = self.make_disk(number_of_particles)
         self.code.gas_particles.add_particles(self.gas_particles)
+        self.hydro_channel_to_particles = self.code.gas_particles.new_channel_to(self.gas_particles)
+        self.particles_channel_to_hydro = self.gas_particles.new_channel_to(self.code.gas_particles)
 
     def make_disk(self, number_of_particles):
         """

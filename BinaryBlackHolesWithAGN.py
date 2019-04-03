@@ -4,44 +4,64 @@ from BinaryBlackHole import BinaryBlackHole
 from amuse.ic.plummer import new_plummer_model
 from amuse.datamodel import Particle, Particles
 from amuse.couple.bridge import Bridge
+from amuse.community.huayno.interface import Huayno
 from amuse.units import units
 import numpy as np
 
 
-class System(object):
+class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, disk_mass_fraction, binaries_affect_disk=False,
                  radiative_transfer=False, timestep=0.1 | units.Myr, converter=None, number_of_workers=1,
                  disk_powerlaw=1):
-        self.supermassive_blackhole = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
+        self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
-                                  disk_min=(self.supermassive_blackhole.radius.value_in(units.parsec)) * 2,
-                                  disk_max=(self.supermassive_blackhole.radius.value_in(units.parsec)) * 100,
+                                  disk_min=(self.smbh.radius.value_in(units.parsec)) * 2,
+                                  disk_max=(self.smbh.radius.value_in(units.parsec)) * 100,
                                   number_of_workers=number_of_workers,
                                   converter=converter,
                                   powerlaw=disk_powerlaw)
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
-        self.grav_code = None
-        self.hydro_code = None
+        self.hydro_code = self.disk.hydro_code
         self.converter = converter
         # Generate the binary locations and masses
         self.generate_binaries(new_plummer_model)
 
+        # Now add them to a combined gravity code
+        self.grav_code = Huayno(converter, number_of_workers=number_of_workers)
+
+        # Adding them together because not sure how to split the channels into different particle groups
+        self.all_grav_particles = self.smbh.super_massive_black_hole + self.binaries
+        self.grav_code.add_particles(self.all_grav_particles)
+
+        # Channels to update the particles here
+        self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.all_grav_particles)
+        self.channel_from_binaries_to_grav = self.all_grav_particles.new_channel_to(self.grav_code.particles)
+
+        self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
 
-        raise NotImplementedError
-
     def evolve_model(self, end_time):
-        raise NotImplementedError
+
+        sim_time = 0. | end_time.units
+
+        while sim_time < end_time:
+            sim_time += self.timestep
+
+            self.bridge.evolve_model(sim_time)
+
+            self.channel_from_grav_to_binaries.copy()
+            self.disk.hydro_channel_to_particles.copy()
+
 
     def generate_binaries(self, method):
         binary_locations = method(self.number_of_binaries, convert_nbody=self.converter)
 
         com = binary_locations.center_of_mass()
         # determine bump's local velocity
-        outer_particles = binary_locations.select(lambda r: (com - r).length() > 2 * self.supermassive_blackhole.radius,
+        outer_particles = binary_locations.select(lambda r: (com - r).length() > 2 * self.smbh.radius,
                                                   ["position"])
 
         # Now only use those outer particle positions to generate the binaries,
