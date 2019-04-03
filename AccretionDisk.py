@@ -13,6 +13,8 @@ class AccretionDisk(object):
     as getting the information needed for plotting, etc.
 
     Could also be extended with Radiative Transport if needd
+
+
     """
 
     def __init__(self, number_of_particles=100, mode='normal', converter=None, number_of_workers=1,

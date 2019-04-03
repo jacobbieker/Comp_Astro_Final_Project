@@ -17,6 +17,22 @@ class BinaryBlackHole(object):
 
         Keep binaries by themselves
 
+        Put Nbody in bridge
+
+        Have it lose energy as it goes through the disk
+
+        Put that in the bridge so that it loses energy in conjunction with the hydro code
+
+        Put in dynamical friction term in bridge for losing energy then, so it does it
+
+        But need to figure out dynamical friction equation for that
+
+        Make a protoplanetary disk -> AGN disk is the same, just larger
+
+
+
+
+
 
         """
         self.orbital_period = orbital_period
