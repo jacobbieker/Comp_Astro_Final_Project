@@ -65,7 +65,7 @@ class BinaryBlackHolesWithAGN(object):
         for _ in self.number_of_binaries:
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
             binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
-                                     orbital_period=1 | units.yr,
+                                     orbital_period=np.random.uniform(0.25,40, size=1) | units.yr,
                                      eccentricity=np.random.uniform(0.0, 0.99, size=1),
                                      inclincation=np.random.uniform(0.0, 90.0, size=1))
 
