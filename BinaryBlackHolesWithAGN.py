@@ -29,7 +29,7 @@ class BinaryBlackHolesWithAGN(object):
         self.hydro_code = self.disk.hydro_code
         self.converter = converter
         # Generate the binary locations and masses
-        self.generate_binaries(new_plummer_model)
+        self.generate_binaries()
 
         # Now add them to a combined gravity code
         self.grav_code = Huayno(converter, number_of_workers=number_of_workers)
@@ -58,18 +58,11 @@ class BinaryBlackHolesWithAGN(object):
             self.disk.hydro_channel_to_particles.copy()
 
 
-    def generate_binaries(self, method):
-        binary_locations = method(self.number_of_binaries, convert_nbody=self.converter)
-
-        com = binary_locations.center_of_mass()
-        # determine bump's local velocity
-        outer_particles = binary_locations.select(lambda r: (com - r).length() > 2 * self.smbh.radius,
-                                                  ["position"])
-
+    def generate_binaries(self):
         # Now only use those outer particle positions to generate the binaries,
         # since nothing is within 2 radii of the black hole
 
-        for i in self.number_of_binaries:
+        for _ in self.number_of_binaries:
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
             binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
                                      orbital_period=1 | units.yr,
