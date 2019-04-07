@@ -13,7 +13,7 @@ class BinaryBlackHole(object):
 
         Create binaries, and then distribute them according to Plummer sphere
 
-        Have it set center of mass velocity and venter of mass location
+        Have it set center of mass velocity and center of mass location
 
         Keep binaries by themselves
 
