@@ -130,10 +130,28 @@ class BinaryBlackHole(object):
                                                                        delta_t=time_to_advance)
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
-
-    def merge_particles(self):
+   
+    def merge_particles(self, particles_in_binary):
         """
+        To determine the merge we use the semi-major axis values from
+        https://arxiv.org/ftp/arxiv/papers/1608/1608.01940.pdf
         Merges the binary particles into a single particle, with the
         :return:
         """
-        raise NotImplementedError
+        #Simon probably won't like this constant being here but for now here it is
+        def_merged = .0000023396 | units.AU
+        
+        if self.semi_major_axis <= def_merged:
+            #Just need to return the time
+            new_blackhole = Particles(1)
+            #The new mass of the merged BH is about 70% of the sum due to energy lost in merge
+            #Simon probably won't like this number here
+
+            new_blackhole.mass =0.7*(particles_in_binary.mass.sum())
+            new_blackhole.velocity = particles_in_binary.center_of_mass_velocity
+            self.blackholes.add_particles(new_blackhole)
+            self.blackholes.remove_particle(particles_in_binary)
+            return
+        else:
+            continue
+           
