@@ -164,4 +164,4 @@ class BinaryBlackHole(object):
 
     def merge_particles(self, merge_condition):
         if merge_condition:
-            merge_particles(total_mass)
+            merged_blackhole_attributes(total_mass)
