@@ -1,4 +1,3 @@
-from amuse.lab import *
 import numpy as np
 from amuse.ext.solarsystem import get_position
 from amuse.units import units, constants, nbody_system
@@ -13,55 +12,6 @@ import matplotlib.animation
 from amuse.lab import *
 from amuse.units import units
 from amuse.io import read_set_from_file
-
-
-def make_map(sph,N=100,L=1):
-
-    x,y=numpy.indices( ( N+1,N+1 ))
-
-    x=L*(x.flatten()-N/2.)/N
-    y=L*(y.flatten()-N/2.)/N
-    z=x*0.
-    vx=0.*x
-    vy=0.*x
-    vz=0.*x
-
-    x=units.parsec(x)
-    y=units.parsec(y)
-    z=units.parsec(z)
-    vx=units.kms(vx)
-    vy=units.kms(vy)
-    vz=units.kms(vz)
-
-    rho,rhovx,rhovy,rhovz,rhoe=sph.get_hydro_state_at_point(x,y,z,vx,vy,vz)
-    rho=rho.reshape((N+1,N+1))
-
-    return rho
-
-def write_output(filename, parts, conv):
-
-    particles_nbody = ParticlesWithUnitsConverted(parts, conv.as_converter_from_nbody_to_si())
-
-    write_set_to_file(particles_nbody, filename, "txt", attribute_names= ('rho', 'mass', 'x', 'y', 'z','vx', 'vy', 'vz'))
-
-    return 0
-
-def plot_hydro(time, sph, i, L=10):
-    x_label = "x [pc]"
-    y_label = "y [pc]"
-    fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12)
-
-    #    fig=pyplot.figure(figsize=(12,12))
-
-    rho=make_map(sph,N=200,L=L)
-    pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
-    pyplot.savefig("GMC_"+str(i)+".png")
-#    subplot.set_title("GMC at zero age")
-#pyplot.title("Molecular cloud at time="+time.as_string_in(units.Myr))
-#pyplot.xlabel("x [pc]")
-#pyplot.ylabel("x [pc]")
-#pyplot.title("GMC at time="+time.as_string_in(units.Myr))
-#pyplot.savefig("GMC_"+str(i)+".png")
 
 
 def get_orbital_elements_of_triple(particles):

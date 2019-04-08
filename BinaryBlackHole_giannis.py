@@ -1,5 +1,5 @@
 import numpy as np
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, Particle
 from amuse.ext.solarsystem import get_position
 from amuse.units import units, constants
 
@@ -50,6 +50,7 @@ class BinaryBlackHole(object):
         self.blackholes[1].position = binary_position
         self.blackholes[1].velocity = binary_velocity
         self.blackholes.move_to_center()
+        self.merged_blackhole = Particle()
 
     def particles(self):
         return self.blackholes
@@ -107,8 +108,7 @@ class BinaryBlackHole(object):
     def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
-                                              time_to_advance=5 | units.day,
-                                              merge_condition):
+                                              time_to_advance=5 | units.day):
         """
         Sets the binary's orbit around the supermassive central blackhole
         :param central_blackhole:
@@ -134,19 +134,10 @@ class BinaryBlackHole(object):
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
+        merge_condition = self.set_merge_conditions()
+        self.merge_particles(merge_condition)
 
-
-        self.set_merge_conditions()
-        try:
-            self.merge_particles(merge_condition)
-        except:
-            pass
-
-
-
-
-
-    def merged_blackhole_attributes(self, fraction_of_total_mass = 0.95, total_mass):
+    def merged_blackhole_attributes(self, fraction_of_total_mass = 0.95):
         """
         Merges the binary particles into a single particle, with the
         :return:
@@ -155,10 +146,10 @@ class BinaryBlackHole(object):
         # 2) Add the merged particle to merged_blackholes
         # 3) Remove the binary blackholes from blackholes set
         # 4) Bridge the new particle set to SMBH gravity
-        self.merged_blackhole = Particle()
-        merged_blackhole_location, merged_blackhole_velocity = self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
+        merged_blackhole_location = self.blackholes.center_of_mass()
+        merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
         # Set the initial position and velocity of the merged_blackholes to be the same as was the last values from --- set_binary_location_and_velocity ---
-        self.merged_blackhole.mass = fraction_of_total_mass * self.total_mass
+        self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
         self.merged_blackhole.radius =  (2*constants.G*self.merged_blackhole.mass)/(constants.c**2) # Could as well be zero cause we dont care anymore about it
                                                                                                     # I only left it in because we want to avoid the new particle
                                                                                                     # colliding with other particles
@@ -177,4 +168,4 @@ class BinaryBlackHole(object):
 
     def merge_particles(self, merge_condition):
         if merge_condition:
-            merged_blackhole_attributes(total_mass)
+            self.merged_blackhole_attributes()
