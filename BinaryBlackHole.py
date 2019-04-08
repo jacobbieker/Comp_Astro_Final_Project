@@ -130,14 +130,20 @@ class BinaryBlackHole(object):
                                                                        delta_t=time_to_advance)
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
+<<<<<<< HEAD
    
     def merge_particles(self, particles_in_binary):
+=======
+
+    def merge_particles(self):
+>>>>>>> parent of e023ae7... Add merge conditions and merging attributes
         """
         To determine the merge we use the semi-major axis values from
         https://arxiv.org/ftp/arxiv/papers/1608/1608.01940.pdf
         Merges the binary particles into a single particle, with the
         :return:
         """
+<<<<<<< HEAD
         #Simon probably won't like this constant being here but for now here it is
         def_merged = .0000023396 | units.AU
         
@@ -155,3 +161,6 @@ class BinaryBlackHole(object):
         else:
             continue
            
+=======
+        raise NotImplementedError
+>>>>>>> parent of e023ae7... Add merge conditions and merging attributes
