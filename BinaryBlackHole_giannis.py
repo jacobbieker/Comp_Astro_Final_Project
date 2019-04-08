@@ -150,14 +150,14 @@ class BinaryBlackHole(object):
         merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
         # Set the initial position and velocity of the merged_blackholes to be the same as was the last values from --- set_binary_location_and_velocity ---
         self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
-        self.merged_blackhole.radius =  (2*constants.G*self.merged_blackhole.mass)/(constants.c**2) # Could as well be zero cause we dont care anymore about it
+        self.merged_blackhole[0].radius =  (2*constants.G*self.merged_blackhole[0].mass)/(constants.c**2) # Could as well be zero cause we dont care anymore about it
                                                                                                     # I only left it in because we want to avoid the new particle
                                                                                                     # colliding with other particles
-        self.merged_blackhole.position = merged_blackhole_location
-        self.merged_blackhole.velocity = merged_blackhole_velocity
+        self.merged_blackhole[0].position = merged_blackhole_location
+        self.merged_blackhole[0].velocity = merged_blackhole_velocity
 
         self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
-        self.blackholes.add_particle(self.merged_blackhole)
+        self.blackholes.add_particle(self.merged_blackhole[0])
 
 
 
