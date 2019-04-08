@@ -107,7 +107,8 @@ class BinaryBlackHole(object):
     def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
-                                              time_to_advance=5 | units.day):
+                                              time_to_advance=5 | units.day,
+                                              merge_condition):
         """
         Sets the binary's orbit around the supermassive central blackhole
         :param central_blackhole:
@@ -133,6 +134,18 @@ class BinaryBlackHole(object):
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
+
+
+        self.set_merge_conditions()
+        try:
+            self.merge_particles(merge_condition)
+        except:
+            pass
+
+
+
+
+
     def merged_blackhole_attributes(self, fraction_of_total_mass = 0.95, total_mass):
         """
         Merges the binary particles into a single particle, with the
@@ -153,13 +166,13 @@ class BinaryBlackHole(object):
         self.merged_blackhole.velocity = merged_blackhole_velocity
 
         self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
-        self.blackholes.add_particles(self.merged_blackhole)
+        self.blackholes.add_particle(self.merged_blackhole)
+
+
 
 
         # Need to add these particles to gravity instead of the binaries
         raise NotImplementedError
-
-
 
 
     def merge_particles(self, merge_condition):
