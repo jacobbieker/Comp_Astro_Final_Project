@@ -100,7 +100,7 @@ class BinaryBlackHole(object):
         self.set_center_of_mass(center_of_mass)
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
-    def set_merge_conditions(self, minimum_distance = 350 | units.km):
+    def set_merge_conditions(self, minimum_distance = 100 * (2*constants.G*self.blackholes[0].mass)/(constants.c**2) | units.km):
         blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
         merge_condition = blackholes_distance < minimum_distance
         return merge_condition

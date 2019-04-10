@@ -15,8 +15,8 @@ class BinaryBlackHolesWithAGN(object):
                  radiative_transfer=False, timestep=0.1 | units.Myr, converter=None, number_of_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
-        self.inner_boundary = (self.smbh.radius.value_in(units.parsec)) * 2
-        self.outer_buondary = (self.smbh.radius.value_in(units.parsec)) * 100
+        self.inner_boundary = (self.smbh.radius.value_in(units.parsec)) * 100
+        self.outer_buondary = (self.smbh.radius.value_in(units.parsec)) * 100000
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
                                   disk_min=self.inner_boundary,
                                   disk_max=self.outer_buondary,
