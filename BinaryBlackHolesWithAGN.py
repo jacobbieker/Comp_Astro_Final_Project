@@ -16,10 +16,10 @@ class BinaryBlackHolesWithAGN(object):
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.inner_boundary = (self.smbh.radius.value_in(units.parsec)) * 100
-        self.outer_buondary = (self.smbh.radius.value_in(units.parsec)) * 100000
+        self.outer_boundary = (self.smbh.radius.value_in(units.parsec)) * 100000
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
                                   disk_min=self.inner_boundary,
-                                  disk_max=self.outer_buondary,
+                                  disk_max=self.outer_boundary,
                                   number_of_workers=number_of_workers,
                                   converter=converter,
                                   powerlaw=disk_powerlaw)
@@ -58,22 +58,38 @@ class BinaryBlackHolesWithAGN(object):
             self.disk.hydro_channel_to_particles.copy()
 
 
+
+
     def generate_binaries(self):
         # Now only use those outer particle positions to generate the binaries,
         # since nothing is within 2 radii of the black hole
 
         for _ in self.number_of_binaries:
-            blackhole_masses = np.random.uniform(low=10, high=15, size=2)
-            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
-                                     orbital_period=np.random.uniform(0.25,40, size=1) | units.yr,
-                                     eccentricity=np.random.uniform(0.0, 0.99, size=1),
-                                     inclincation=np.random.uniform(0.0, 90.0, size=1))
 
-            binary.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
+            blackhole_masses = np.random.uniform(low=10, high=15, size=2)
+
+
+            self.outer_binary_semi_major_axis, self.outer_binary_eccentricity = binary.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
                                                          eccentricity=np.random.uniform(0.0, 0.99, size=1),
-                                                         inclination=np.random.uniform(0.0, 90.0, size=1),
-                                                         semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_buondary, size=1) | units.parsec,
+                                                         inclination=np.random.uniform(0.0, 180.0, size=1),
+                                                         semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_boundary, size=1) | units.parsec,
                                                          )
+
+
+            self.binary_maximum_orbital_period = self.BinaryBlackHole.orbital_period(get_hill_radius(self.outer_binary_semi_major_axis, self.outer_binary_eccentricity
+                                                                                , self.BinaryBlackHole.total_mass, self.smbh.super_massive_black_hole),
+                                                                                self.BinaryBlackHole.total_mass
+                                                                                )
+            self.binary_minimum_orbital_period = self.BinaryBlackHole.orbital_period(1000 * self.BinaryBlackHole.get_schwarzschild_radius(self.BinaryBlackHole.total_mass),
+                                                                                self.BinaryBlackHole.total_mass
+                                                                                )
+            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
+                                     orbital_period=np.random.uniform(self.binary_minimum_orbital_period, self.binary_maximum_orbital_period, size=1) | units.yr,
+                                     eccentricity=np.random.uniform(0.0, 0.99, size=1),
+                                     inclincation=np.random.uniform(0.0, 180.0, size=1))
+
+
+
             self.binaries.add_particles(binary)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
