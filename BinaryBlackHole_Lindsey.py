@@ -1,5 +1,5 @@
 import numpy as np
-from amuse.datamodel import Particles, Particle
+from amuse.datamodel import Particles
 from amuse.ext.solarsystem import get_position
 from amuse.units import units, constants
 
@@ -50,7 +50,6 @@ class BinaryBlackHole(object):
         self.blackholes[1].position = binary_position
         self.blackholes[1].velocity = binary_velocity
         self.blackholes.move_to_center()
-        self.merged_blackhole = Particle()
 
     def particles(self):
         return self.blackholes
@@ -100,10 +99,8 @@ class BinaryBlackHole(object):
         self.set_center_of_mass(center_of_mass)
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
-    def set_merge_conditions(self, minimum_distance = 100 * (2*constants.G*self.blackholes[0].mass)/(constants.c**2) | units.km):
-        blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
-        merge_condition = blackholes_distance < minimum_distance
-        return merge_condition
+    def set_merge_conditions(self):
+        raise NotImplementedError
 
     def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
@@ -133,39 +130,37 @@ class BinaryBlackHole(object):
                                                                        delta_t=time_to_advance)
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
+<<<<<<< HEAD
+   
+    def merge_particles(self, particles_in_binary):
+=======
 
-        merge_condition = self.set_merge_conditions()
-        self.merge_particles(merge_condition)
-
-    def merged_blackhole_attributes(self, fraction_of_total_mass = 0.95):
+    def merge_particles(self):
+>>>>>>> parent of e023ae7... Add merge conditions and merging attributes
         """
+        To determine the merge we use the semi-major axis values from
+        https://arxiv.org/ftp/arxiv/papers/1608/1608.01940.pdf
         Merges the binary particles into a single particle, with the
         :return:
         """
-        # 1) Get set_binary_location_and_velocity value
-        # 2) Add the merged particle to merged_blackholes
-        # 3) Remove the binary blackholes from blackholes set
-        # 4) Bridge the new particle set to SMBH gravity
-        merged_blackhole_location = self.blackholes.center_of_mass()
-        merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
-        # Set the initial position and velocity of the merged_blackholes to be the same as was the last values from --- set_binary_location_and_velocity ---
-        self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
-        self.merged_blackhole[0].radius =  (2*constants.G*self.merged_blackhole[0].mass)/(constants.c**2) # Could as well be zero cause we dont care anymore about it
-                                                                                                    # I only left it in because we want to avoid the new particle
-                                                                                                    # colliding with other particles
-        self.merged_blackhole[0].position = merged_blackhole_location
-        self.merged_blackhole[0].velocity = merged_blackhole_velocity
+<<<<<<< HEAD
+        #Simon probably won't like this constant being here but for now here it is
+        def_merged = .0000023396 | units.AU
+        
+        if self.semi_major_axis <= def_merged:
+            #Just need to return the time
+            new_blackhole = Particles(1)
+            #The new mass of the merged BH is about 70% of the sum due to energy lost in merge
+            #Simon probably won't like this number here
 
-        self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
-        self.blackholes.add_particle(self.merged_blackhole[0])
-
-
-
-
-        # Need to add these particles to gravity instead of the binaries
+            new_blackhole.mass =0.7*(particles_in_binary.mass.sum())
+            new_blackhole.velocity = particles_in_binary.center_of_mass_velocity
+            self.blackholes.add_particles(new_blackhole)
+            self.blackholes.remove_particle(particles_in_binary)
+            return
+        else:
+            continue
+           
+=======
         raise NotImplementedError
-
-
-    def merge_particles(self, merge_condition):
-        if merge_condition:
-            self.merged_blackhole_attributes()
+>>>>>>> parent of e023ae7... Add merge conditions and merging attributes
