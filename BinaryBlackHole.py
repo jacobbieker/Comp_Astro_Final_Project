@@ -63,6 +63,8 @@ class BinaryBlackHole(object):
         self.blackholes.move_to_center()
         self.merged_blackhole = Particle()
 
+        self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
+
     def particles(self):
         return self.blackholes
 
@@ -117,12 +119,11 @@ class BinaryBlackHole(object):
         self.set_center_of_mass(center_of_mass)
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
-    '''
-    def set_merge_conditions(self, minimum_distance = 100 * get_schwarzschild_radius(blackholes[0].mass) | units.km):
-        blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
+
+    def set_merge_conditions(self, blackholes_distance, minimum_distance = 100 * get_schwarzschild_radius(blackholes[0].mass) | units.km):
         merge_condition = blackholes_distance < minimum_distance
         return merge_condition
-    '''
+
 
     def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
@@ -153,12 +154,15 @@ class BinaryBlackHole(object):
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
-        # merge_condition = self.set_merge_conditions()
-        # self.merge_particles(merge_condition)
+        merge_condition = self.set_merge_conditions(self.blackholes_distance)
+        if merge_condition:
+            merge_blackholes()
+
+
 
         return semi_major_axis, eccentricity
 
-    def merged_blackhole_attributes(self, fraction_of_total_mass=0.95):
+    def merge_blackholes(self, fraction_of_total_mass=0.95):
         """
         Merges the binary particles into a single particle, with the
         :return:
