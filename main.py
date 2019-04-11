@@ -10,22 +10,24 @@ from amuse.community.huayno.interface import Huayno
 # from amuse.datamodel import Particles, Particle
 
 
-SMBH = SuperMassiveBlackHole(mass=1e6 | units.MSun)
-SMBH_mass = SMBH.mass
+smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
+smbh_mass = smbh.mass
 
-binaries = BinaryBlackHole(10, 10, SMBH_mass, orbital_period=10 | units.yr)
+binaries = BinaryBlackHole(10, 10, smbh_mass, orbital_period=10 | units.yr)
 
-# print(SMBH.mass)
-# print(binaries.total_mass)
-# print(binaries.eccentricity)
-# print(binaries.orbital_period)
-print(SMBH.super_massive_black_hole)
+all_particles = Particles()
+all_particles.add_particle(smbh.super_massive_black_hole)
+all_particles.add_particles(binaries.blackholes)
 
-converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
+converter = nbody_system.nbody_to_si(smbh_mass, 100000 * smbh.radius)
+print (smbh.radius.in_(units.parsec))
 gravity = Huayno(converter)
 
-gravity.particles.add_particle(SMBH.super_massive_black_hole)
-gravity.particles.add_particle(binaries.blackholes)
+
+gravity.particles.add_particle(all_particles)
+print (gravity.particles)
+# gravity.particles.add_particle(smbh.super_massive_black_hole)
+# gravity.particles.add_particle(binaries.blackholes)
 #
 # channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_particles)
 

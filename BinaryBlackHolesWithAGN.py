@@ -35,7 +35,10 @@ class BinaryBlackHolesWithAGN(object):
         self.grav_code = Huayno(converter, number_of_workers=number_of_workers)
 
         # Adding them together because not sure how to split the channels into different particle groups
-        self.all_grav_particles = self.smbh.super_massive_black_hole + self.binaries
+        self.all_grav_particles = Particle()
+        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
+        self.all_grav_particles.add_particles(self.binaries)
+        # Adding them gravity
         self.grav_code.add_particles(self.all_grav_particles)
 
         # Channels to update the particles here
@@ -69,12 +72,11 @@ class BinaryBlackHolesWithAGN(object):
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
 
 
-            self.outer_binary_semi_major_axis, self.outer_binary_eccentricity = binary.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
+            self.outer_binary_semi_major_axis, self.outer_binary_eccentricity = self.BinaryBlackHole.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
                                                          eccentricity=np.random.uniform(0.0, 0.99, size=1),
                                                          inclination=np.random.uniform(0.0, 180.0, size=1),
                                                          semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_boundary, size=1) | units.parsec,
                                                          )
-
 
             self.binary_maximum_orbital_period = self.BinaryBlackHole.orbital_period(get_hill_radius(self.outer_binary_semi_major_axis, self.outer_binary_eccentricity
                                                                                 , self.BinaryBlackHole.total_mass, self.smbh.super_massive_black_hole),
@@ -90,7 +92,7 @@ class BinaryBlackHolesWithAGN(object):
 
 
 
-            self.binaries.add_particles(binary)
+            self.binaries.add_particles(binary.blackholes)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
         """
