@@ -64,6 +64,7 @@ class BinaryBlackHole(object):
         self.merged_blackhole = Particle()
 
         self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
+        self.minimum_distance = 100 * self.get_schwarzschild_radius(self.blackholes[0].mass)
 
     def particles(self):
         return self.blackholes
@@ -120,7 +121,7 @@ class BinaryBlackHole(object):
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
 
-    def set_merge_conditions(self, blackholes_distance, minimum_distance = 100 * get_schwarzschild_radius(blackholes[0].mass) | units.km):
+    def set_merge_conditions(self, blackholes_distance, minimum_distance):
         merge_condition = blackholes_distance < minimum_distance
         return merge_condition
 
@@ -154,7 +155,7 @@ class BinaryBlackHole(object):
 
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
-        merge_condition = self.set_merge_conditions(self.blackholes_distance)
+        merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
         if merge_condition:
             merge_blackholes()
 
