@@ -37,17 +37,17 @@ gravity = Huayno(converter)
 
 gravity.particles.add_particle(all_particles)
 print(gravity.particles)
-print('semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
-      '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
-      '\neccentricity: ', binaries.initial_outer_eccentricity, \
-      '\ntotal mass: ', binaries.total_mass.in_(units.MSun), \
-      '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
-      '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
-      '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
-      '\nblackhole1 position: ', binaries.blackholes[0].position.in_(units.AU), \
-      '\nblackhole2 position: ', binaries.blackholes[1].position.in_(units.AU), \
-      '\nbinaries mass: ', binaries.blackholes.mass.in_(units.MSun), \
-      '\nbinaries distance: ', binaries.blackholes_distance.in_(units.AU))
+print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
+            '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
+            '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
+            '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
+            '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
+            '\nblackhole1 position: ', binaries.blackholes[0].position.in_(units.AU), \
+            '\nblackhole2 position: ', binaries.blackholes[1].position.in_(units.AU), \
+            '\ntotal binary mass: ', binaries.total_mass.in_(units.MSun), \
+            '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
+            '\nbinary blackhole mass: ', binaries.blackholes.mass.in_(units.MSun), \
+            '\binary blackhole distance: ', binaries.blackholes_distance.in_(units.AU))
 
 # channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_particles)
 
