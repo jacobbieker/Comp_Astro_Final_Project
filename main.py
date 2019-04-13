@@ -10,7 +10,7 @@ from amuse.community.huayno.interface import Huayno
 # from amuse.datamodel import Particles, Particle
 
 
-smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
+smbh = SuperMassiveBlackHole(mass=1e7 | units.MSun)
 smbh_mass = smbh.mass
 
 blackhole_masses = np.random.uniform(low=10, high=15, size=2)
@@ -37,15 +37,15 @@ gravity = Huayno(converter)
 
 gravity.particles.add_particle(all_particles)
 print(gravity.particles)
-print('semi major axis: ', binaries.initial_outer_semi_major_axis, \
-      '\nbinaries hill radius: ', binaries.hill_radius, \
+print('semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
+      '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
       '\neccentricity: ', binaries.initial_outer_eccentricity, \
-      '\ntotal mass: ', binaries.total_mass, \
-      '\nsmbh mass: ', binaries.central_blackhole.mass, \
-      '\nbinaries max orbital period: ', binaries.binary_max_orbital_period, \
-      '\nbinaries min orbital period: ', binaries.binary_min_orbital_period, \
-      '\nblackhole1 position: ', binaries.blackholes[0].position, \
-      '\nblackhole2 position: ', binaries.blackholes[1].position, \
+      '\ntotal mass: ', binaries.total_mass.in_(units.MSun), \
+      '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
+      '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
+      '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
+      '\nblackhole1 position: ', binaries.blackholes[0].position.in_(units.AU), \
+      '\nblackhole2 position: ', binaries.blackholes[1].position.in_(units.AU), \
       '\nbinaries mass: ', binaries.blackholes.mass.in_(units.MSun), \
       '\nbinaries distance: ', binaries.blackholes_distance.in_(units.AU))
 
