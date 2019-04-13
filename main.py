@@ -18,9 +18,9 @@ blackhole_masses = np.random.uniform(low=10, high=15, size=2)
 inner_boundary = (smbh.radius.value_in(units.parsec)) * 100
 outer_boundary = (smbh.radius.value_in(units.parsec)) * 100000
 
-binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-                         initial_outer_semi_major_axis=np.random.uniform(inner_boundary, outer_boundary, size=1),
-                         initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1,
+binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
+                         initial_outer_semi_major_axis=np.random.uniform(inner_boundary, outer_boundary, size=1)[0] | units.parsec,
+                         initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
                          eccentricity=np.random.uniform(0.0, 0.99, size=1),
                          inclincation=np.random.uniform(0.0, 180.0, size=1),
                          )
@@ -37,10 +37,13 @@ gravity = Huayno(converter)
 
 gravity.particles.add_particle(all_particles)
 print(gravity.particles)
-print()
-print('binaries hill radius: ', binaries.hill_radius.in_(units.AU), \
-      '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
-      '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
+print('semi major axis: ', binaries.initial_outer_semi_major_axis, \
+      '\nbinaries hill radius: ', binaries.hill_radius, \
+      '\neccentricity: ', binaries.initial_outer_eccentricity, \
+      '\ntotal mass: ', binaries.total_mass, \
+      '\nsmbh mass: ', binaries.central_blackhole.mass, \
+      '\nbinaries max orbital period: ', binaries.binary_max_orbital_period, \
+      '\nbinaries min orbital period: ', binaries.binary_min_orbital_period, \
       '\nblackhole1 position: ', binaries.blackholes[0].position, \
       '\nblackhole2 position: ', binaries.blackholes[1].position, \
       '\nbinaries mass: ', binaries.blackholes.mass.in_(units.MSun), \

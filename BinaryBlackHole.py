@@ -48,8 +48,9 @@ class BinaryBlackHole(object):
         self.initial_outer_eccentricity = initial_outer_eccentricity
 
         self.hill_radius = self.get_hill_radius(self.initial_outer_semi_major_axis, self.initial_outer_eccentricity, self.total_mass, self.central_blackhole.mass)
-        self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass) | units.yr
-        self.binary_min_orbital_period = self.get_orbital_period(1000*self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass) | units.yr
+        self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass)
+        self.binary_min_orbital_period = self.get_orbital_period(1000*self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
+        # self.orbital_period = 10 | units.yr
         self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr), self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
 
         self.semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
