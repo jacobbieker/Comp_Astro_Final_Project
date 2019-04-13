@@ -19,7 +19,7 @@ class AccretionDisk(object):
 
     def __init__(self, number_of_particles=100, mode='normal', converter=None, number_of_workers=1,
                  disk_min=1E-3, disk_max=1E-2, fraction_of_central_blackhole_mass=0.1,
-                 powerlaw=1):
+                 powerlaw=1e-2):
         self.code = Gadget2(unit_converter=converter, mode=mode, number_of_workers=number_of_workers)
         self.number_of_particles = number_of_particles
         self.converter = converter

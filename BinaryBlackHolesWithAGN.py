@@ -15,8 +15,8 @@ class BinaryBlackHolesWithAGN(object):
                  radiative_transfer=False, timestep=0.1 | units.Myr, converter=None, number_of_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
-        self.inner_boundary = (self.smbh.radius.value_in(units.parsec)) * 100
-        self.outer_boundary = (self.smbh.radius.value_in(units.parsec)) * 100000
+        self.inner_boundary = (self.smbh.radius) * 100
+        self.outer_boundary = (self.smbh.radius) * 100000
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
                                   disk_min=self.inner_boundary,
                                   disk_max=self.outer_boundary,
@@ -47,18 +47,26 @@ class BinaryBlackHolesWithAGN(object):
 
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
+# ----------------------- must become parameter -----------------------#
+        self.end_time = 5 | units.Myr
+# ---------------------------------------------------------------------#
+        self.evolve_gravity(self.end_time)
 
-    def evolve_model(self, end_time):
+    def evolve_gravity(self, end_time):
 
         sim_time = 0. | end_time.units
 
         while sim_time < end_time:
             sim_time += self.timestep
 
+            self.grav_code.evolve_model(sim_time)
             self.bridge.evolve_model(sim_time)
+            print('letsgo')
 
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
+
+        self.grav_code.stop()
 
 
 
@@ -71,26 +79,12 @@ class BinaryBlackHolesWithAGN(object):
 
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
 
-
-            self.outer_binary_semi_major_axis, self.outer_binary_eccentricity = self.BinaryBlackHole.set_in_orbit_around_central_blackhole(central_blackhole=self.smbh.super_massive_black_hole,
-                                                         eccentricity=np.random.uniform(0.0, 0.99, size=1),
-                                                         inclination=np.random.uniform(0.0, 180.0, size=1),
-                                                         semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_boundary, size=1) | units.parsec,
-                                                         )
-
-            self.binary_maximum_orbital_period = self.BinaryBlackHole.orbital_period(get_hill_radius(self.outer_binary_semi_major_axis, self.outer_binary_eccentricity
-                                                                                , self.BinaryBlackHole.total_mass, self.smbh.super_massive_black_hole),
-                                                                                self.BinaryBlackHole.total_mass
-                                                                                )
-            self.binary_minimum_orbital_period = self.BinaryBlackHole.orbital_period(1000 * self.BinaryBlackHole.get_schwarzschild_radius(self.BinaryBlackHole.total_mass),
-                                                                                self.BinaryBlackHole.total_mass
-                                                                                )
-            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1],
-                                     orbital_period=np.random.uniform(self.binary_minimum_orbital_period, self.binary_maximum_orbital_period, size=1) | units.yr,
+            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
+                                     initial_outer_semi_major_axis=np.random.uniform(inner_boundary, outer_boundary, size=1)[0] | units.parsec,
+                                     initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
                                      eccentricity=np.random.uniform(0.0, 0.99, size=1),
-                                     inclincation=np.random.uniform(0.0, 180.0, size=1))
-
-
+                                     inclincation=np.random.uniform(0.0, 180.0, size=1),
+                                     )
 
             self.binaries.add_particles(binary.blackholes)
 

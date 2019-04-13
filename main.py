@@ -53,3 +53,37 @@ print('semi major axis: ', binaries.initial_outer_semi_major_axis, \
 
 
 # gravity.stop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#
+# from AccretionDisk import AccretionDisk
+# from SuperMassiveBlackHole import SuperMassiveBlackHole
+# from BinaryBlackHole import BinaryBlackHole
+# from amuse.ic.plummer import new_plummer_model
+# from amuse.datamodel import Particle, Particles
+# from amuse.couple.bridge import Bridge
+# from amuse.community.huayno.interface import Huayno
+# from amuse.units import units
+# import numpy as np
+# from BinaryBlackHolesWithAGN import BinaryBlackHolesWithAGN
+#
+# simulation = BinaryBlackHolesWithAGN(1e6, 2, 0.5, converter=converter)
