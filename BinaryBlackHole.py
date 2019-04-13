@@ -7,7 +7,7 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, orbital_period, eccentricity=0.0, inclincation=0.0,
+    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity, eccentricity=0.0, inclincation=0.0,
                  orbital_fraction_timestep=0.5):
         """
         This model is to generate a binary black hole system when given an initial Particle to split
@@ -42,17 +42,20 @@ class BinaryBlackHole(object):
         self.blackholes = Particles(2)
         self.blackholes[0].mass = mass_one | units.MSun
         self.blackholes[1].mass = mass_two | units.MSun
-        # self.blackholes.mass = [mass_one | units.MSun, mass_two | units.MSun]
-        self.orbital_period = orbital_period
         self.total_mass = self.blackholes.mass.sum()
+
+        self.initial_outer_semi_major_axis = initial_outer_semi_major_axis
+        self.initial_outer_eccentricity = initial_outer_eccentricity
+
+        self.hill_radius = self.get_hill_radius(self.initial_outer_semi_major_axis, self.initial_outer_eccentricity, self.total_mass, self.central_blackhole.mass)
+        self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass) | units.yr
+        self.binary_min_orbital_period = self.get_orbital_period(1000*self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass) | units.yr
+        self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr), self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
+
         self.semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
         self.eccentricity = eccentricity
         self.inclincation = inclincation
-        self.hill_radius = 0.5 * self.get_hill_radius(self.semi_major_axis, self.eccentricity,
-                                                      self.total_mass, self.central_blackhole.mass)
-        self.binary_max_orbital_period = self.get_orbital_period(self.hill_radius, self.total_mass)
-        self.binary_min_orbital_period = \
-            self.get_orbital_period(1000*self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
+
         self.timestep = self.orbital_period * orbital_fraction_timestep
 
         binary_position, binary_velocity = get_position(self.blackholes[0].mass, self.blackholes[1].mass,
@@ -121,10 +124,6 @@ class BinaryBlackHole(object):
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
 
-    def set_merge_conditions(self, blackholes_distance, minimum_distance):
-        merge_condition = blackholes_distance < minimum_distance
-        return merge_condition
-
 
     def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
@@ -162,6 +161,11 @@ class BinaryBlackHole(object):
 
 
         return semi_major_axis, eccentricity
+
+
+    def set_merge_conditions(self, blackholes_distance, minimum_distance):
+        merge_condition = blackholes_distance < minimum_distance
+        return merge_condition
 
     def merge_blackholes(self, fraction_of_total_mass=0.95):
         """
