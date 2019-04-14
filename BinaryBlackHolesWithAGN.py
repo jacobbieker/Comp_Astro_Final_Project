@@ -1,23 +1,25 @@
 from AccretionDisk import AccretionDisk
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from BinaryBlackHole import BinaryBlackHole
-from amuse.ic.plummer import new_plummer_model
-from amuse.datamodel import Particle, Particles
+from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.couple.bridge import Bridge
-from amuse.community.huayno.interface import Huayno
+from amuse.community.ph4.interface import ph4
 from amuse.units import units
 import numpy as np
+from amuse.io import write_set_to_file
 
 
 class BinaryBlackHolesWithAGN(object):
 
-    def __init__(self, mass_of_central_black_hole, number_of_binaries, disk_mass_fraction, binaries_affect_disk=False,
+    def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
                  radiative_transfer=False, timestep=0.1 | units.Myr, converter=None, number_of_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.inner_boundary = (self.smbh.radius) * 100
         self.outer_boundary = (self.smbh.radius) * 100000
+        self.number_of_gas_particles = number_of_gas_particles
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
+                                  number_of_particles=self.number_of_gas_particles,
                                   disk_min=self.inner_boundary,
                                   disk_max=self.outer_boundary,
                                   number_of_workers=number_of_workers,
@@ -32,12 +34,10 @@ class BinaryBlackHolesWithAGN(object):
         self.generate_binaries()
 
         # Now add them to a combined gravity code
-        self.grav_code = Huayno(converter, number_of_workers=number_of_workers)
+        self.grav_code = ph4(converter, number_of_workers=number_of_workers)
 
         # Adding them together because not sure how to split the channels into different particle groups
-        self.all_grav_particles = Particle()
-        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
-        self.all_grav_particles.add_particles(self.binaries)
+        self.all_grav_particles = ParticlesSuperset([self.smbh.super_massive_black_hole, self.binaries])
         # Adding them gravity
         self.grav_code.add_particles(self.all_grav_particles)
 
@@ -48,13 +48,18 @@ class BinaryBlackHolesWithAGN(object):
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
 # ----------------------- must become parameter -----------------------#
-        self.end_time = 5 | units.Myr
+        self.end_time = 5. | units.Myr
 # ---------------------------------------------------------------------#
         self.evolve_gravity(self.end_time)
 
     def evolve_gravity(self, end_time):
 
         sim_time = 0. | end_time.units
+
+        # New particle superset of all particles in the sim
+        # Initial Conditions
+        all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
+        write_set_to_file(all_sim_particles.savepoint(sim_time), "{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
 
         while sim_time < end_time:
             sim_time += self.timestep
@@ -66,9 +71,12 @@ class BinaryBlackHolesWithAGN(object):
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
 
+            # New particle superset of all particles in the sim
+            all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
+            write_set_to_file(all_sim_particles.savepoint(sim_time), "{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+
         self.grav_code.stop()
-
-
+        self.disk.hydro_code.stop()
 
 
     def generate_binaries(self):
@@ -79,8 +87,8 @@ class BinaryBlackHolesWithAGN(object):
 
             blackhole_masses = np.random.uniform(low=10, high=15, size=2)
 
-            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-                                     initial_outer_semi_major_axis=np.random.uniform(inner_boundary, outer_boundary, size=1)[0] | units.parsec,
+            binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
+                                     initial_outer_semi_major_axis=np.random.uniform(self.inner_boundary, self.outer_boundary, size=1)[0] | units.parsec,
                                      initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
                                      eccentricity=np.random.uniform(0.0, 0.99, size=1),
                                      inclincation=np.random.uniform(0.0, 180.0, size=1),

@@ -1,5 +1,4 @@
 from amuse.community.gadget2.interface import Gadget2
-from amuse.datamodel import Particles
 from amuse.units import units, constants
 import numpy as np
 from amuse.ext.protodisk import ProtoPlanetaryDisk
