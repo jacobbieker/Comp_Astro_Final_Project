@@ -1,7 +1,9 @@
 from amuse.community.gadget2.interface import Gadget2
 from amuse.units import units, constants
 import numpy as np
+from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.ext.protodisk import ProtoPlanetaryDisk
+from amuse.units import nbody_system
 
 
 class AccretionDisk(object):
