@@ -1,5 +1,6 @@
 from amuse.community.gadget2.interface import Gadget2
-from amuse.community.fi.interface import Fi
+from amuse.ext.sph_to_grid import convert_SPH_to_grid
+from amuse.community.athena.interface import Athena
 from amuse.units import units, constants
 import numpy as np
 from amuse.datamodel import Particle, Particles, ParticlesSuperset
@@ -19,10 +20,23 @@ class AccretionDisk(object):
 
     """
 
-    def __init__(self, number_of_particles=100, mode='normal', converter=None, number_of_workers=1,
-                 disk_min=1E-3, disk_max=1E-2, fraction_of_central_blackhole_mass=0.1,
+    def __init__(self, number_of_particles=100, mode=128, grid_size=2, converter=None, number_of_workers=1,
+                 disk_min=1E-3, disk_max=1E-2, end_of_disk=1 | units.parsec, fraction_of_central_blackhole_mass=0.1,
                  powerlaw=1e-2):
-        self.code = Fi(convert_nbody=converter, mode=mode)
+        self.code = Athena(converter, number_of_workers=number_of_workers)
+        self.code.initialize_code()
+        self.code.parameters.nx = mode
+        self.code.parameters.ny = mode
+        self.code.parameters.nz = mode
+        self.code.parameters.length_x = grid_size * end_of_disk
+        self.code.parameters.length_y = grid_size * end_of_disk
+        self.code.parameters.length_z = grid_size * end_of_disk
+        self.code.parameters.gamma = 5/3.
+        self.code.parameters.courant_number = 0.3
+        self.code.x_boundary_conditions = ("periodic", "periodic")
+        self.code.y_boundary_conditions = ("periodic", "periodic")
+        self.code.z_boundary_conditions = ("periodic", "periodic")
+        self.code.commit_parameters()
         self.number_of_particles = number_of_particles
         self.converter = converter
         self.disk_min = disk_min
@@ -30,9 +44,17 @@ class AccretionDisk(object):
         self.fraction_of_central_blackhole_mass = fraction_of_central_blackhole_mass
         self.powerlaw = powerlaw
         self.gas_particles = self.make_disk(number_of_particles)
-        self.code.gas_particles.add_particles(self.gas_particles)
-        self.hydro_channel_to_particles = self.code.gas_particles.new_channel_to(self.gas_particles)
-        self.particles_channel_to_hydro = self.gas_particles.new_channel_to(self.code.gas_particles)
+        self.sph_code = Gadget2(converter, mode='periodic')
+        self.sph_code.gas_particles.add_particles(self.gas_particles)
+        #self.sph_code.commit_particles()
+        self.grid = convert_SPH_to_grid(self.sph_code, (100,100,100), do_scale=True)
+        #self.code.gas_particles.add_particles(self.gas_particles)
+        self.channel_from_grid_to_hydro = self.grid.new_channel_to(self.code.grid)
+        self.channel_from_grid_to_hydro.copy()
+        self.code.initialize_grid()
+        self.channel_from_hydro_to_grid = self.code.grid.new_channel_to(self.grid)
+        #self.hydro_channel_to_particles = self.code.gas_particles.new_channel_to(self.gas_particles)
+        #self.particles_channel_to_hydro = self.gas_particles.new_channel_to(self.code.gas_particles)
 
     def make_disk(self, number_of_particles):
         """

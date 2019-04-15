@@ -24,6 +24,7 @@ class BinaryBlackHolesWithAGN(object):
                                   number_of_particles=self.number_of_gas_particles,
                                   disk_min=self.inner_boundary.value_in(self.outer_boundary.unit),
                                   disk_max=self.outer_boundary.value_in(self.outer_boundary.unit),
+                                  end_of_disk=self.outer_boundary,
                                   number_of_workers=number_of_workers,
                                   converter=self.converter,
                                   powerlaw=disk_powerlaw)
@@ -50,14 +51,15 @@ class BinaryBlackHolesWithAGN(object):
 
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
-        self.evolve_gravity(self.end_time)
+        self.evolve_model(self.end_time)
 
-    def evolve_gravity(self, end_time):
+    def evolve_model(self, end_time):
 
         sim_time = 0. | self.end_time.unit
 
         # New particle superset of all particles in the sim
         # Initial Conditions
+        self.disk.channel_from_hydro_to_grid.copy()
         all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
         write_set_to_file(all_sim_particles, "{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
 
@@ -69,7 +71,8 @@ class BinaryBlackHolesWithAGN(object):
             print('letsgo')
 
             self.channel_from_grav_to_binaries.copy()
-            self.disk.hydro_channel_to_particles.copy()
+            #self.disk.hydro_channel_to_particles.copy()
+            self.disk.channel_from_hydro_to_grid.copy()
 
             # New particle superset of all particles in the sim
             all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
