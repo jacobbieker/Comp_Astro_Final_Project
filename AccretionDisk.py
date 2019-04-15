@@ -46,6 +46,10 @@ class AccretionDisk(object):
         self.gas_particles = self.make_disk(number_of_particles)
         self.sph_code = Gadget2(converter, mode='periodic')
         self.sph_code.gas_particles.add_particles(self.gas_particles)
+        x = 0 | units.parsec
+        vx = 0 | units.parsec / units.s
+        #self.sph_code.evolve_model(0.1 | units.day)
+        self.sph_code.get_hydro_state_at_point(x,x,x,vx,vx,vx)
         self.grid = convert_SPH_to_grid(self.sph_code, (100,100,100), do_scale=True)
         #self.code.gas_particles.add_particles(self.gas_particles)
         self.channel_from_grid_to_hydro = self.grid.new_channel_to(self.code.grid)
