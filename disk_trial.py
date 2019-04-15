@@ -66,8 +66,6 @@ def main(N, Mtot, Rvir, t_end, dt):
     grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
 
     print("Did Grid")
-    exit()
-
     Etot_init = hydro.kinetic_energy \
                 + hydro.potential_energy + hydro.thermal_energy
 
@@ -75,9 +73,8 @@ def main(N, Mtot, Rvir, t_end, dt):
     while time < t_end:
         time += dt
         hydro.evolve_model(time)
-        print(time)
-
-    write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
+        print(time, flush=True)
+        write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
 
     Ekin = hydro.kinetic_energy
     Epot = hydro.potential_energy

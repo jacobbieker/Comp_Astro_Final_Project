@@ -2,6 +2,7 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from amuse.community.athena.interface import Athena
 from amuse.units import units, constants
+from amuse.units import nbody_system
 import numpy as np
 from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.ext.protodisk import ProtoPlanetaryDisk
@@ -25,18 +26,18 @@ class AccretionDisk(object):
                  powerlaw=1e-2):
         self.code = Athena(converter, number_of_workers=number_of_workers)
         self.code.initialize_code()
-        self.code.parameters.nx = resolution
-        self.code.parameters.ny = resolution
-        self.code.parameters.nz = resolution
-        self.code.parameters.length_x = grid_size * end_of_disk
-        self.code.parameters.length_y = grid_size * end_of_disk
-        self.code.parameters.length_z = grid_size * end_of_disk
-        self.code.parameters.gamma = 5/3.
-        self.code.parameters.courant_number = 0.3
-        self.code.x_boundary_conditions = ("periodic", "periodic")
-        self.code.y_boundary_conditions = ("periodic", "periodic")
-        self.code.z_boundary_conditions = ("periodic", "periodic")
-        self.code.commit_parameters()
+        #self.code.parameters.nx = resolution
+        #self.code.parameters.ny = resolution
+        #self.code.parameters.nz = resolution
+        #self.code.parameters.length_x = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
+        #self.code.parameters.length_y = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
+        #self.code.parameters.length_z = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
+        #self.code.parameters.gamma = 5/3.
+        #self.code.parameters.courant_number = 0.3
+        #self.code.x_boundary_conditions = ("periodic", "periodic")
+        #self.code.y_boundary_conditions = ("periodic", "periodic")
+        #self.code.z_boundary_conditions = ("periodic", "periodic")
+        #self.code.commit_parameters()
         self.number_of_particles = number_of_particles
         self.converter = converter
         self.disk_min = disk_min
@@ -44,12 +45,12 @@ class AccretionDisk(object):
         self.fraction_of_central_blackhole_mass = fraction_of_central_blackhole_mass
         self.powerlaw = powerlaw
         self.gas_particles = self.make_disk(number_of_particles)
-        self.sph_code = Gadget2(converter, mode='periodic')
+        self.sph_code = Gadget2(mode='periodic')
         self.sph_code.gas_particles.add_particles(self.gas_particles)
         x = 0 | units.parsec
         vx = 0 | units.parsec / units.s
         #self.sph_code.evolve_model(0.1 | units.day)
-        self.sph_code.get_hydro_state_at_point(x,x,x,vx,vx,vx)
+        #self.sph_code.get_hydro_state_at_point(x,x,x,vx,vx,vx)
         self.grid = convert_SPH_to_grid(self.sph_code, (100,100,100), do_scale=True)
         #self.code.gas_particles.add_particles(self.gas_particles)
         self.channel_from_grid_to_hydro = self.grid.new_channel_to(self.code.grid)
