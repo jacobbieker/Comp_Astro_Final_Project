@@ -1,5 +1,4 @@
-#from amuse.community.gadget2.interface import Gadget2
-from amuse.community.fi.interface import Fi
+from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from amuse.community.athena.interface import Athena
 from amuse.units import units, constants
@@ -45,7 +44,7 @@ class AccretionDisk(object):
         self.fraction_of_central_blackhole_mass = fraction_of_central_blackhole_mass
         self.powerlaw = powerlaw
         self.gas_particles = self.make_disk(number_of_particles)
-        self.sph_code = Fi(converter, mode='periodic')
+        self.sph_code = Gadget2(converter, mode='periodic')
         self.sph_code.gas_particles.add_particles(self.gas_particles)
         self.grid = convert_SPH_to_grid(self.sph_code, (100,100,100), do_scale=True)
         #self.code.gas_particles.add_particles(self.gas_particles)
