@@ -23,7 +23,7 @@ class BinaryBlackHolesWithAGN(object):
         print(self.inner_boundary.value_in(units.AU))
         exit()
         self.end_time = end_time
-        self.converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.outer_boundary)
+        self.converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.outer_boundary) # Converter is wrong
         self.number_of_gas_particles = number_of_gas_particles
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
                                   number_of_particles=self.number_of_gas_particles,

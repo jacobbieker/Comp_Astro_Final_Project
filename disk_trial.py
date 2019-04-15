@@ -1,3 +1,4 @@
+from __future__ import print_function
 from amuse.lab import *
 from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
