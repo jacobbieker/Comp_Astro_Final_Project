@@ -61,26 +61,58 @@ def main(N, Mtot, Rvir, t_end, dt):
     gas, converter = gas_sphere(N, Mtot, Rvir)
     from amuse.ext.protodisk import ProtoPlanetaryDisk
 
+    converter = nbody_system.nbody_to_si(1e7 | units.MSun, 100 | units.AU)
     gas_particles = ProtoPlanetaryDisk(10000,
-                                       convert_nbody=None,
-                                       densitypower=1,
+                                       convert_nbody=converter,
+                                       densitypower=1.5,
                                        Rmin=1.,
-                                       Rmax=1e3,
+                                       Rmax=10,
                                        q_out=1.0,
-                                       discfraction=0.5).result
+                                       discfraction=0.1).result
 
-    hydro = Gadget2(unit_converter=None, mode='periodic', number_of_workers=4)
+    gas_particles.move_to_center()
+
+    hydro = Gadget2(unit_converter=nbody_system.nbody_to_si(1e6 | units.MSun, 100*1e4 | units.AU),
+                    mode='normal', number_of_workers=12)
     hydro.gas_particles.add_particles(gas_particles)
 
-    grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
+    rho = make_map(hydro, 1000)
 
-    write_set_to_file(grid, "Unitless_Disk_test.h5", "hdf5")
+    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
+    plt.savefig('density_map_disk_converter.pdf')
+    plt.show()
+
+    #grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
+
+    #rho = make_map(hydro, 100)
+    '''
+    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
+    plt.savefig('density_map_gridded_converter.pdf')
+    plt.show()
+
+    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=0)
+
+    plt.imshow(summed_density)
+    plt.title("X")
+    plt.show()
+
+    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=1)
+
+    plt.imshow(summed_density)
+    plt.title("Y")
+    plt.show()
+
+    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=2)
+
+    plt.imshow(summed_density)
+    plt.title("Z")
+    plt.show()
+    '''
+    #write_set_to_file(grid, "Unitless_Disk_test.h5", "hdf5")
 
     print("Did Grid")
 
-
-
-    rho = make_map(hydro)
+    #rho = make_map(hydro, 100)
 
     plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
     plt.savefig('density_map.pdf')
@@ -139,7 +171,7 @@ def new_option_parser():
                       default=5e6 | units.MSun,
                       help="Total disk mass [%default]")
     result.add_option("--Rvir", unit=units.AU, dest="Rvir", type="float",
-                      default=19.756 | units.AU,
+                      default=1974626.290440254 | units.AU,
                       help="Radius of initial sphere [%default]")
     result.add_option("--t_end", unit=units.yr, dest="t_end", type="float",
                       default=5 | units.Myr,

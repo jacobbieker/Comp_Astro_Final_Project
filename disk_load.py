@@ -44,6 +44,12 @@ grid = read_set_from_file("/home/jacob/Development/Comp_Astro_Final_Project/Unit
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
 
+summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=0)
+
+plt.imshow(summed_density)
+plt.show()
+
+
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
 print(grid.x[:,0,0])
