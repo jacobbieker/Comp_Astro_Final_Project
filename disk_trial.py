@@ -59,13 +59,25 @@ def make_map(hydro, grid_points=100, L=1):
 
 def main(N, Mtot, Rvir, t_end, dt):
     gas, converter = gas_sphere(N, Mtot, Rvir)
+    from amuse.ext.protodisk import ProtoPlanetaryDisk
 
-    hydro = Gadget2(converter, mode='periodic', number_of_workers=10)
-    hydro.gas_particles.add_particles(gas)
+    gas_particles = ProtoPlanetaryDisk(1000,
+                                       convert_nbody=None,
+                                       densitypower=1,
+                                       Rmin=1.,
+                                       Rmax=1.4852276032235088e-15/1.4852276032235088e-18,
+                                       q_out=1.0,
+                                       discfraction=0.5).result
 
-    grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
+    hydro = Gadget2(unit_converter=None, mode='periodic', number_of_workers=4)
+    hydro.gas_particles.add_particles(gas_particles)
+
+    grid = convert_SPH_to_grid(hydro, (50,50,50), do_scale=True)
+
+    write_set_to_file(grid, "Unitless_Disk_small.h5", "hdf5")
 
     print("Did Grid")
+    exit()
     Etot_init = hydro.kinetic_energy \
                 + hydro.potential_energy + hydro.thermal_energy
 
@@ -74,7 +86,7 @@ def main(N, Mtot, Rvir, t_end, dt):
         time += dt
         hydro.evolve_model(time)
         print(time, flush=True)
-        write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
+    write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
 
     Ekin = hydro.kinetic_energy
     Epot = hydro.potential_energy

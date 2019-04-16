@@ -17,6 +17,8 @@ class BinaryBlackHolesWithAGN(object):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.inner_boundary = (self.smbh.radius) * 100
         self.outer_boundary = (self.smbh.radius) * 100000
+        print(self.inner_boundary.value_in(units.AU), flush=True)
+        print(self.outer_boundary.value_in(units.AU), flush=True)
         self.end_time = end_time
         self.converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.outer_boundary) # Converter is wrong
         self.number_of_gas_particles = number_of_gas_particles
