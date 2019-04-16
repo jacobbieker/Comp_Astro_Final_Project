@@ -61,23 +61,30 @@ def main(N, Mtot, Rvir, t_end, dt):
     gas, converter = gas_sphere(N, Mtot, Rvir)
     from amuse.ext.protodisk import ProtoPlanetaryDisk
 
-    gas_particles = ProtoPlanetaryDisk(1000,
+    gas_particles = ProtoPlanetaryDisk(10000,
                                        convert_nbody=None,
                                        densitypower=1,
                                        Rmin=1.,
-                                       Rmax=1.4852276032235088e-15/1.4852276032235088e-18,
+                                       Rmax=1e3,
                                        q_out=1.0,
                                        discfraction=0.5).result
 
     hydro = Gadget2(unit_converter=None, mode='periodic', number_of_workers=4)
     hydro.gas_particles.add_particles(gas_particles)
 
-    grid = convert_SPH_to_grid(hydro, (50,50,50), do_scale=True)
+    grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
 
-    write_set_to_file(grid, "Unitless_Disk_small.h5", "hdf5")
+    write_set_to_file(grid, "Unitless_Disk_test.h5", "hdf5")
 
     print("Did Grid")
-    exit()
+
+
+
+    rho = make_map(hydro)
+
+    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
+    plt.savefig('density_map.pdf')
+    plt.show()
     Etot_init = hydro.kinetic_energy \
                 + hydro.potential_energy + hydro.thermal_energy
 
