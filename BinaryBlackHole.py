@@ -7,7 +7,7 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity, eccentricity=0.0, inclincation=0.0,
+    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, eccentricity=0.0, inclincation=0.0,
                  orbital_fraction_timestep=0.5):
         """
         This model is to generate a binary black hole system when given an initial Particle to split

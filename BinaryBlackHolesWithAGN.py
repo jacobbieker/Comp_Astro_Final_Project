@@ -93,14 +93,14 @@ class BinaryBlackHolesWithAGN(object):
     def generate_binaries(self):
         # Now only use those outer particle positions to generate the binaries,
         # since nothing is within 2 radii of the black hole
+        initial_outer_semi_major_axis = linspace(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), number_of_binaries//steps_of_inclination)
 
-        for _ in range(self.number_of_binaries):
+        for i in range(self.number_of_binaries):
 
             blackhole_masses = [30,30]
 
             binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
-                                     initial_outer_semi_major_axis=np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), size=1)[0] | self.outer_boundary.unit,
-                                     initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
+                                     initial_outer_semi_major_axis=initial_outer_semi_major_axis[i] | self.outer_boundary.unit,
                                      eccentricity=0.6,
                                      inclincation=np.random.uniform(0.0, 180.0, size=1),
                                      )
