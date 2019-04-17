@@ -28,7 +28,8 @@ class BinaryBlackHolesWithAGN(object):
                                   number_of_workers=number_of_hydro_workers,
                                   gadget_converter=self.gadget_converter,
                                   disk_converter=self.disk_converter,
-                                  powerlaw=disk_powerlaw)
+                                  powerlaw=disk_powerlaw,
+                                  end_time=self.end_time)
         write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5".format(self.smbh.super_massive_black_hole.mass.value_in(units.MSun)), "hdf5")
 
         self.binaries = Particles()
@@ -37,7 +38,7 @@ class BinaryBlackHolesWithAGN(object):
         self.hydro_code = self.disk.hydro_code
         # Generate the binary locations and masses
         self.generate_binaries()
-        self.all_grav_particles = Particles() #ParticlesSuperset([self.smbh.super_massive_black_hole, self.binaries])
+        self.all_grav_particles = Particles()
         self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
         self.all_grav_particles.add_particles(self.binaries)
         self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(), self.all_grav_particles.virial_radius()) # Converter is wrong
@@ -88,12 +89,12 @@ class BinaryBlackHolesWithAGN(object):
 
         for _ in range(self.number_of_binaries):
 
-            blackhole_masses = np.random.uniform(low=10, high=15, size=2)
+            blackhole_masses = [30,30]
 
             binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
                                      initial_outer_semi_major_axis=np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), size=1)[0] | self.outer_boundary.unit,
                                      initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
-                                     eccentricity=np.random.uniform(0.0, 0.99, size=1),
+                                     eccentricity=0.6,
                                      inclincation=np.random.uniform(0.0, 180.0, size=1),
                                      )
 

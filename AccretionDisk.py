@@ -14,10 +14,22 @@ class AccretionDisk(object):
 
     Could also be extended with Radiative Transport if needd
 
+    E_dot, I_dot, A_dot
+
+    Start with different hill radii
+
+    Make 30 solar mass, half hill radius apart, 0.6 eccentricity, set apocenter as half hill radius
+
+    Set in different orbits around the black hole
+
+    Prevent randomness
+
+    Use smallN for all of the
+
 
     """
 
-    def __init__(self, number_of_particles=100000, mode='normal', gadget_converter=None, disk_converter=None,
+    def __init__(self, number_of_particles=100000, gadget_converter=None, disk_converter=None,
                  number_of_workers=1, disk_min=1, disk_max=1e4, fraction_of_central_blackhole_mass=0.1,
                  powerlaw=1e-2, end_time=5 | units.Myr):
         self.gadget_converter = gadget_converter
