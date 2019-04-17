@@ -31,6 +31,7 @@ class BinaryBlackHolesWithAGN(object):
                                   disk_converter=self.disk_converter,
                                   powerlaw=disk_powerlaw)
         write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5", "hdf5")
+
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
@@ -112,7 +113,7 @@ class BinaryBlackHolesWithAGN(object):
 
         self.bridge = Bridge(use_threading=True)
         self.bridge.timestep = timestep
-        self.bridge.add_system(self.grav_code, (self.hydro_code,))
+        #self.bridge.add_system(self.grav_code, (self.hydro_code,))
         self.bridge.add_system(self.hydro_code, (self.grav_code,))
 
         return self.bridge
