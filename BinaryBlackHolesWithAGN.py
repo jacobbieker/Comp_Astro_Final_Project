@@ -7,7 +7,6 @@ from amuse.community.ph4.interface import ph4
 import numpy as np
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
-import matplotlib.pyplot as plt
 
 
 class BinaryBlackHolesWithAGN(object):
@@ -30,7 +29,7 @@ class BinaryBlackHolesWithAGN(object):
                                   gadget_converter=self.gadget_converter,
                                   disk_converter=self.disk_converter,
                                   powerlaw=disk_powerlaw)
-        write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5", "hdf5")
+        write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5".format(self.smbh.super_massive_black_hole.mass.value_in(units.MSun)), "hdf5")
 
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
@@ -69,7 +68,6 @@ class BinaryBlackHolesWithAGN(object):
 
         while sim_time < end_time:
             sim_time += self.timestep
-
             self.bridge.evolve_model(sim_time)
             print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
 
