@@ -14,29 +14,40 @@ from mpl_toolkits.mplot3d import Axes3D
 # from amuse.datamodel import Particles, Particle
 
 
-number_of_binaries = 50
+number_of_binaries = 100
+steps_of_inclination = 19
 
-smbh = SuperMassiveBlackHole(mass=1e7 | units.MSun)
+smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
 smbh_mass = smbh.mass
 
-inner_boundary = (smbh.radius.value_in(units.parsec)) * 100
-outer_boundary = (smbh.radius.value_in(units.parsec)) * 1000000
+inner_boundary = smbh.radius*1e2
+outer_boundary = smbh.radius*1e6
 
-print(inner_boundary, outer_boundary)
+print(inner_boundary.in_(units.parsec), outer_boundary.in_(units.parsec))
+
 
 all_gravity_particles = Particles()
+initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination) | (outer_boundary.unit)
+initial_inclination = np.linspace(0,180, steps_of_inclination)
 
-for i in range(number_of_binaries):
-    blackhole_masses = np.random.uniform(low=10, high=15, size=2)
+sma_incl_list = []
+
+for i in range(len(initial_inclination)):
+    for j in range(len(initial_outer_semi_major_axis)):
+        sma_incl_list.append([initial_inclination[i], initial_outer_semi_major_axis[j]])
+for i in range(len(sma_incl_list)):
+    blackhole_masses = [30,30]
 
     binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-                               initial_outer_semi_major_axis=np.random.uniform(inner_boundary, outer_boundary, size=1)[
-                                                                 0] | units.parsec,
-                               initial_outer_eccentricity=np.random.uniform(0, 0.99, size=1)[0],
-                               eccentricity=np.random.uniform(0.0, 0.99, size=1),
-                               inclincation=np.random.uniform(0.0, 180.0, size=1),
+                               initial_outer_semi_major_axis=sma_incl_list[i][1],
+                               initial_outer_eccentricity=0.6,
+                               eccentricity=0.6,
+                               inclincation=sma_incl_list[i][0],
                                )
-    print (binaries.initial_outer_semi_major_axis)
+
+
+    print (sma_incl_list[i][1].in_(units.parsec))
+    # binaries.blackholes[0].position = -binaries.blackholes[0].position
     all_gravity_particles.add_particles(binaries.blackholes)
 
 all_gravity_particles.add_particle(smbh.super_massive_black_hole)
@@ -52,7 +63,7 @@ end_time = 5. | units.Myr
 timestep = 0.1 | end_time.unit
 # ---------------------------------------------------------------------#
 sim_time = 0. | end_time.unit
-'''
+
 while sim_time < end_time:
     sim_time += timestep
     print('lego')
@@ -60,9 +71,10 @@ while sim_time < end_time:
     print('letsgo')
 
     channel_from_grav_to_binaries.copy()
-'''
+
 
 print(gravity.particles)
+
 print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
       '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
       '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
@@ -79,6 +91,7 @@ print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
 graph = ax.scatter(all_gravity_particles.x.value_in(units.parsec), all_gravity_particles.y.value_in(units.parsec), all_gravity_particles.z.value_in(units.parsec))
+ax.scatter(0,0,0, color='red')
 plt.savefig('binaries_positions.pdf')
 plt.show()
 gravity.stop()

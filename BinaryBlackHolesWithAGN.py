@@ -13,7 +13,7 @@ from amuse.io import write_set_to_file
 class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
-                 radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1,
+                 radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.inner_boundary = self.smbh.radius * 100
@@ -93,7 +93,15 @@ class BinaryBlackHolesWithAGN(object):
     def generate_binaries(self):
         # Now only use those outer particle positions to generate the binaries,
         # since nothing is within 2 radii of the black hole
-        initial_outer_semi_major_axis = linspace(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), number_of_binaries//steps_of_inclination)
+        initial_outer_semi_major_axis = np.linspace(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), number_of_binaries//steps_of_inclination)
+        inclination_list = np.linspace(0,180, steps_of_inclination)
+        #
+        #
+        #
+        # need to feix the iteration
+        #
+        #
+        # 
 
         for i in range(self.number_of_binaries):
 
