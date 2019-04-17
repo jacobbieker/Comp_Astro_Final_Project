@@ -4,6 +4,7 @@ from BinaryBlackHole import BinaryBlackHole
 from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.couple.bridge import Bridge
 from amuse.community.ph4.interface import ph4
+from amuse.community.hermite0.interface import Hermite
 import numpy as np
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
@@ -18,6 +19,9 @@ class BinaryBlackHolesWithAGN(object):
         self.inner_boundary = self.smbh.radius * 100
         self.outer_boundary = self.smbh.radius * 100000
         self.end_time = end_time
+        self.binary_codes = []
+        self.binary_code_from_channels = []
+        self.binary_code_to_channels = []
         self.number_of_gas_particles = number_of_gas_particles
         self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
         self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
@@ -37,25 +41,26 @@ class BinaryBlackHolesWithAGN(object):
         self.number_of_binaries = number_of_binaries
         self.hydro_code = self.disk.hydro_code
         # Generate the binary locations and masses
-        self.generate_binaries()
-        self.all_grav_particles = Particles()
-        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
-        self.all_grav_particles.add_particles(self.binaries)
-        self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(), self.all_grav_particles.virial_radius()) # Converter is wrong
+        self.all_grav_particles = self.smbh.super_massive_black_hole #Particles()
+        #self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
+        #self.all_grav_particles.add_particles(self.binaries)
+        self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass, self.all_grav_particles.radius)
 
         # Now add them to a combined gravity code
         self.grav_code = ph4(self.gravity_converter, number_of_workers=number_of_grav_workers)
         # Adding them gravity
-        self.grav_code.particles.add_particles(self.all_grav_particles)
+        self.grav_code.particles.add_particle(self.smbh.super_massive_black_hole)
         # Adding them together because not sure how to split the channels into different particle groups
 
 
         # Channels to update the particles here
-        self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.all_grav_particles)
-        self.channel_from_binaries_to_grav = self.all_grav_particles.new_channel_to(self.grav_code.particles)
+        # self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.smbh.super_massive_black_hole)
+        # self.channel_from_binaries_to_grav = self.smbh.super_massive_black_hole.new_channel_to(self.grav_code.particles)
 
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
+        self.generate_binaries()
+        self.add_bridge(self.binary_codes)
         self.evolve_model(self.end_time)
 
     def evolve_model(self, end_time):
@@ -72,8 +77,10 @@ class BinaryBlackHolesWithAGN(object):
             self.bridge.evolve_model(sim_time)
             print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
 
-            self.channel_from_grav_to_binaries.copy()
+            #self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
+            for channel in self.binary_code_from_channels:
+                channel.copy()
 
             # New particle superset of all particles in the sim
             all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
@@ -98,7 +105,20 @@ class BinaryBlackHolesWithAGN(object):
                                      inclincation=np.random.uniform(0.0, 180.0, size=1),
                                      )
 
+            smbh_and_binary = Particles()
+            smbh_and_binary.add_particle(self.smbh.super_massive_black_hole)
+            smbh_and_binary.add_particles(binary.blackholes)
+            binary_converter = nbody_system.nbody_to_si(smbh_and_binary.mass.sum(), smbh_and_binary.virial_radius())
+            one_binary_code = Hermite(binary_converter)
+            one_binary_code.particles.add_particles(binary.blackholes)
+
+            self.binary_codes.append(one_binary_code)
             self.binaries.add_particles(binary.blackholes)
+
+            channel_from_grav_to_binaries = one_binary_code.particles.new_channel_to(binary.blackholes)
+            channel_from_binaries_to_grav = binary.blackholes.new_channel_to(one_binary_code.particles)
+            self.binary_code_from_channels.append(channel_from_grav_to_binaries)
+            self.binary_code_to_channels.append(channel_from_binaries_to_grav)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
         """
@@ -113,6 +133,10 @@ class BinaryBlackHolesWithAGN(object):
         self.bridge = Bridge(use_threading=True)
         self.bridge.timestep = timestep
         #self.bridge.add_system(self.grav_code, (self.hydro_code,))
-        self.bridge.add_system(self.hydro_code, (self.grav_code,))
+        self.bridge.add_system(self.hydro_code, (self.grav_code, ))
 
         return self.bridge
+
+    def add_bridge(self, code):
+        self.bridge.add_system(self.grav_code, set(code))
+        self.bridge.add_system(self.hydro_code, set(code))

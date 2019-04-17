@@ -1,4 +1,5 @@
 from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
 from amuse.units import units, constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 import numpy as np
