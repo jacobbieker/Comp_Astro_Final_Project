@@ -7,13 +7,14 @@ from AccretionDisk import AccretionDisk
 from amuse.lab import Particle, units, nbody_system, constants, Particles
 from amuse.community.huayno.interface import Huayno
 from amuse.community.ph4.interface import ph4
+from mpl_toolkits.mplot3d import Axes3D
 
 
 # from amuse.units import units, constants
 # from amuse.datamodel import Particles, Particle
 
 
-number_of_binaries = 5
+number_of_binaries = 50
 
 smbh = SuperMassiveBlackHole(mass=1e7 | units.MSun)
 smbh_mass = smbh.mass
@@ -74,6 +75,6 @@ print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.
 
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
-graph = ax.scatter(binaries.blackholes.x.value_in(units.AU), binaries.blackholes.y.value_in(units.AU), binaries.blackholes.z.value_in(units.AU))
+graph = ax.scatter(all_gravity_particles.x.value_in(units.AU), all_gravity_particles.y.value_in(units.AU), all_gravity_particles.z.value_in(units.AU))
 plt.savefig('binaries_positions.pdf')
 # plt.show()
