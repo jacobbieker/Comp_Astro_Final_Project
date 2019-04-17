@@ -8,6 +8,7 @@ from amuse.lab import Particle, units, nbody_system, constants, Particles
 from amuse.community.huayno.interface import Huayno
 from amuse.community.ph4.interface import ph4
 
+
 # from amuse.units import units, constants
 # from amuse.datamodel import Particles, Particle
 
@@ -70,15 +71,9 @@ print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.
       '\nbinary blackhole mass: ', binaries.blackholes.mass.in_(units.MSun), \
       '\nbinary blackhole distance: ', binaries.blackholes_distance.in_(units.AU))
 
-# from AccretionDisk import AccretionDisk
-# from SuperMassiveBlackHole import SuperMassiveBlackHole
-# from BinaryBlackHole import BinaryBlackHole
-# from amuse.ic.plummer import new_plummer_model
-# from amuse.datamodel import Particle, Particles
-# from amuse.couple.bridge import Bridge
-# from amuse.community.huayno.interface import Huayno
-# from amuse.units import units
-# import numpy as np
-# from BinaryBlackHolesWithAGN import BinaryBlackHolesWithAGN
-#
-# simulation = BinaryBlackHolesWithAGN(1e6, 2, 0.5, converter=converter)
+
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
+graph = ax.scatter(binaries.x.value_in(units.AU), binaries.x.value_in(units.AU), binaries.x.value_in(units.AU))
+plt.savefig('binaries_positions.pdf')
+# plt.show()
