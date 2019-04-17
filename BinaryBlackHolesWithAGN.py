@@ -13,13 +13,12 @@ import matplotlib.pyplot as plt
 class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
-                 radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_workers=1,
+                 radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.inner_boundary = self.smbh.radius * 100
         self.outer_boundary = self.smbh.radius * 100000
         self.end_time = end_time
-        self.converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.outer_boundary) # Converter is wrong
         self.number_of_gas_particles = number_of_gas_particles
         self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
         self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
@@ -27,32 +26,28 @@ class BinaryBlackHolesWithAGN(object):
                                   number_of_particles=self.number_of_gas_particles,
                                   disk_min=1.,
                                   disk_max=self.outer_boundary/self.inner_boundary,
-                                  number_of_workers=number_of_workers,
+                                  number_of_workers=number_of_hydro_workers,
                                   gadget_converter=self.gadget_converter,
                                   disk_converter=self.disk_converter,
                                   powerlaw=disk_powerlaw)
-        rho = self.disk.get_density_map(z_plane=1)
-        plt.imshow(rho.value_in(units.amu / units.cm ** 3))
-        plt.savefig('density_map_disk_converter_accretiondisk.pdf')
-        plt.show()
-        print("Made Disk")
-        exit()
+        write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5", "hdf5")
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
         self.hydro_code = self.disk.hydro_code
         # Generate the binary locations and masses
         self.generate_binaries()
-
-        # Now add them to a combined gravity code
-        self.grav_code = ph4(self.converter, number_of_workers=number_of_workers)
-
-        # Adding them together because not sure how to split the channels into different particle groups
         self.all_grav_particles = Particles() #ParticlesSuperset([self.smbh.super_massive_black_hole, self.binaries])
         self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
         self.all_grav_particles.add_particles(self.binaries)
+        self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(), self.all_grav_particles.virial_radius()) # Converter is wrong
+
+        # Now add them to a combined gravity code
+        self.grav_code = ph4(self.gravity_converter, number_of_workers=number_of_grav_workers)
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
+        # Adding them together because not sure how to split the channels into different particle groups
+
 
         # Channels to update the particles here
         self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.all_grav_particles)
@@ -68,20 +63,17 @@ class BinaryBlackHolesWithAGN(object):
 
         # New particle superset of all particles in the sim
         # Initial Conditions
-        self.disk.channel_from_hydro_to_grid.copy()
         all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
         write_set_to_file(all_sim_particles, "{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
 
         while sim_time < end_time:
             sim_time += self.timestep
 
-            self.grav_code.evolve_model(sim_time)
             self.bridge.evolve_model(sim_time)
-            print('letsgo')
+            print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
 
             self.channel_from_grav_to_binaries.copy()
-            #self.disk.hydro_channel_to_particles.copy()
-            self.disk.channel_from_hydro_to_grid.copy()
+            self.disk.hydro_channel_to_particles.copy()
 
             # New particle superset of all particles in the sim
             all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])

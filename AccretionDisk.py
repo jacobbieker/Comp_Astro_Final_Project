@@ -1,6 +1,7 @@
 from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from amuse.community.athena.interface import Athena
+from amuse.community.fi.interface import Fi
 from amuse.units import units, constants
 from amuse.units import nbody_system
 import numpy as np
@@ -26,7 +27,7 @@ class AccretionDisk(object):
                  powerlaw=1e-2):
         self.gadget_converter = gadget_converter
         self.disk_converter = disk_converter
-        self.code = Gadget2(self.gadget_converter, mode=mode, number_of_workers=number_of_workers)
+        self.code = Fi(self.gadget_converter, mode=mode)
         self.number_of_particles = number_of_particles
         self.disk_min = disk_min
         self.disk_max = disk_max
