@@ -20,7 +20,9 @@ smbh = SuperMassiveBlackHole(mass=1e7 | units.MSun)
 smbh_mass = smbh.mass
 
 inner_boundary = (smbh.radius.value_in(units.parsec)) * 100
-outer_boundary = (smbh.radius.value_in(units.parsec)) * 100000
+outer_boundary = (smbh.radius.value_in(units.parsec)) * 1000000
+
+print(inner_boundary, outer_boundary)
 
 all_gravity_particles = Particles()
 
@@ -34,11 +36,12 @@ for i in range(number_of_binaries):
                                eccentricity=np.random.uniform(0.0, 0.99, size=1),
                                inclincation=np.random.uniform(0.0, 180.0, size=1),
                                )
+    print (binaries.initial_outer_semi_major_axis)
     all_gravity_particles.add_particles(binaries.blackholes)
 
 all_gravity_particles.add_particle(smbh.super_massive_black_hole)
 
-converter = nbody_system.nbody_to_si(smbh_mass, 100000 * smbh.radius)
+converter = nbody_system.nbody_to_si(all_gravity_particles.mass.sum(), all_gravity_particles.virial_radius())
 gravity = ph4(converter)
 gravity.particles.add_particles(all_gravity_particles)
 channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_gravity_particles)
@@ -49,7 +52,7 @@ end_time = 5. | units.Myr
 timestep = 0.1 | end_time.unit
 # ---------------------------------------------------------------------#
 sim_time = 0. | end_time.unit
-
+'''
 while sim_time < end_time:
     sim_time += timestep
     print('lego')
@@ -57,8 +60,7 @@ while sim_time < end_time:
     print('letsgo')
 
     channel_from_grav_to_binaries.copy()
-
-gravity.stop()
+'''
 
 print(gravity.particles)
 print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
@@ -66,15 +68,17 @@ print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.
       '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
       '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
       '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
-      '\nbinary blackholes position: ', binaries.blackholes.position.in_(units.AU), \
+      '\nbinary blackholes position: ', all_gravity_particles.position.in_(units.AU), \
       '\ntotal binary mass: ', binaries.total_mass.in_(units.MSun), \
       '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
       '\nbinary blackhole mass: ', binaries.blackholes.mass.in_(units.MSun), \
+      '\nsmbh radius: ', smbh.radius.in_(units.AU), \
       '\nbinary blackhole distance: ', binaries.blackholes_distance.in_(units.AU))
 
 
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
-graph = ax.scatter(all_gravity_particles.x.value_in(units.AU), all_gravity_particles.y.value_in(units.AU), all_gravity_particles.z.value_in(units.AU))
+graph = ax.scatter(all_gravity_particles.x.value_in(units.parsec), all_gravity_particles.y.value_in(units.parsec), all_gravity_particles.z.value_in(units.parsec))
 plt.savefig('binaries_positions.pdf')
-# plt.show()
+plt.show()
+gravity.stop()
