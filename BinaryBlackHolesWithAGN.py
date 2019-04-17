@@ -7,6 +7,7 @@ from amuse.community.ph4.interface import ph4
 import numpy as np
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
+import matplotlib.pyplot as plt
 
 
 class BinaryBlackHolesWithAGN(object):
@@ -15,22 +16,25 @@ class BinaryBlackHolesWithAGN(object):
                  radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_workers=1,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
-        self.inner_boundary = (self.smbh.radius) * 100
-        self.outer_boundary = (self.smbh.radius) * 100000
-        print(self.inner_boundary.value_in(units.AU), flush=True)
-        print(self.outer_boundary.value_in(units.AU), flush=True)
+        self.inner_boundary = self.smbh.radius * 100
+        self.outer_boundary = self.smbh.radius * 100000
         self.end_time = end_time
         self.converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.outer_boundary) # Converter is wrong
         self.number_of_gas_particles = number_of_gas_particles
+        self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
+        self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
         self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
                                   number_of_particles=self.number_of_gas_particles,
-                                  disk_min=self.inner_boundary.value_in(self.outer_boundary.unit),
-                                  disk_max=self.outer_boundary.value_in(self.outer_boundary.unit),
-                                  end_of_disk=self.outer_boundary,
+                                  disk_min=1.,
+                                  disk_max=self.outer_boundary/self.inner_boundary,
                                   number_of_workers=number_of_workers,
-                                  converter=None,
+                                  gadget_converter=self.gadget_converter,
+                                  disk_converter=self.disk_converter,
                                   powerlaw=disk_powerlaw)
-
+        rho = self.disk.get_density_map(z_plane=1)
+        plt.imshow(rho.value_in(units.amu / units.cm ** 3))
+        plt.savefig('density_map_disk_converter_accretiondisk.pdf')
+        plt.show()
         print("Made Disk")
         exit()
         self.binaries = Particles()

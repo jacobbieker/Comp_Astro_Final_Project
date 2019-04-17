@@ -21,44 +21,21 @@ class AccretionDisk(object):
 
     """
 
-    def __init__(self, number_of_particles=100, resolution=128, grid_size=2, converter=None, number_of_workers=1,
-                 disk_min=1E-3, disk_max=1E-2, end_of_disk=1 | units.parsec, fraction_of_central_blackhole_mass=0.1,
+    def __init__(self, number_of_particles=100000, mode='normal', gadget_converter=None, disk_converter=None,
+                 number_of_workers=1, disk_min=1, disk_max=1e4, fraction_of_central_blackhole_mass=0.1,
                  powerlaw=1e-2):
-        self.code = Athena(converter, number_of_workers=number_of_workers)
-        self.code.initialize_code()
-        #self.code.parameters.nx = resolution
-        #self.code.parameters.ny = resolution
-        #self.code.parameters.nz = resolution
-        #self.code.parameters.length_x = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
-        #self.code.parameters.length_y = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
-        #self.code.parameters.length_z = grid_size * end_of_disk.value_in(end_of_disk.units) | nbody_system.length
-        #self.code.parameters.gamma = 5/3.
-        #self.code.parameters.courant_number = 0.3
-        #self.code.x_boundary_conditions = ("periodic", "periodic")
-        #self.code.y_boundary_conditions = ("periodic", "periodic")
-        #self.code.z_boundary_conditions = ("periodic", "periodic")
-        #self.code.commit_parameters()
+        self.gadget_converter = gadget_converter
+        self.disk_converter = disk_converter
+        self.code = Gadget2(self.gadget_converter, mode=mode, number_of_workers=number_of_workers)
         self.number_of_particles = number_of_particles
-        self.converter = converter
         self.disk_min = disk_min
         self.disk_max = disk_max
         self.fraction_of_central_blackhole_mass = fraction_of_central_blackhole_mass
         self.powerlaw = powerlaw
         self.gas_particles = self.make_disk(number_of_particles)
-        self.sph_code = Gadget2(mode='periodic')
-        self.sph_code.gas_particles.add_particles(self.gas_particles)
-        x = 0 | units.parsec
-        vx = 0 | units.parsec / units.s
-        #self.sph_code.evolve_model(0.1 | units.day)
-        #self.sph_code.get_hydro_state_at_point(x,x,x,vx,vx,vx)
-        self.grid = convert_SPH_to_grid(self.sph_code, (100,100,100), do_scale=True)
-        #self.code.gas_particles.add_particles(self.gas_particles)
-        self.channel_from_grid_to_hydro = self.grid.new_channel_to(self.code.grid)
-        self.channel_from_grid_to_hydro.copy()
-        self.code.initialize_grid()
-        self.channel_from_hydro_to_grid = self.code.grid.new_channel_to(self.grid)
-        #self.hydro_channel_to_particles = self.code.gas_particles.new_channel_to(self.gas_particles)
-        #self.particles_channel_to_hydro = self.gas_particles.new_channel_to(self.code.gas_particles)
+        self.code.gas_particles.add_particles(self.gas_particles)
+        self.hydro_channel_to_particles = self.code.gas_particles.new_channel_to(self.gas_particles)
+        self.particles_channel_to_hydro = self.gas_particles.new_channel_to(self.code.gas_particles)
 
     def make_disk(self, number_of_particles):
         """
@@ -68,12 +45,13 @@ class AccretionDisk(object):
         :return: The particles in the disk, as a Particles set
         """
         gas_particles = ProtoPlanetaryDisk(number_of_particles,
-                                           convert_nbody=self.converter,
+                                           convert_nbody=self.disk_converter,
                                            densitypower=self.powerlaw,
                                            Rmin=self.disk_min,
                                            Rmax=self.disk_max,
                                            q_out=1.0,
                                            discfraction=self.fraction_of_central_blackhole_mass).result
+        gas_particles.move_to_center()
         return gas_particles
 
     @property

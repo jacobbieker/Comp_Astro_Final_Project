@@ -3,7 +3,7 @@ from amuse.lab import *
 from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from matplotlib import pyplot as plt
-import numpy  as np
+import numpy as np
 
 
 def gas_sphere(N, Mtot, Rvir):

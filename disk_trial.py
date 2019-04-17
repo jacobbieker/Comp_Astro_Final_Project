@@ -62,24 +62,24 @@ def main(N, Mtot, Rvir, t_end, dt):
     from amuse.ext.protodisk import ProtoPlanetaryDisk
 
     converter = nbody_system.nbody_to_si(1e7 | units.MSun, 100 | units.AU)
-    gas_particles = ProtoPlanetaryDisk(10000,
+    gas_particles = ProtoPlanetaryDisk(100000,
                                        convert_nbody=converter,
                                        densitypower=1.5,
                                        Rmin=1.,
-                                       Rmax=10,
+                                       Rmax=1e4,
                                        q_out=1.0,
                                        discfraction=0.1).result
 
     gas_particles.move_to_center()
 
     hydro = Gadget2(unit_converter=nbody_system.nbody_to_si(1e6 | units.MSun, 100*1e4 | units.AU),
-                    mode='normal', number_of_workers=12)
+                    mode='normal', number_of_workers=8)
     hydro.gas_particles.add_particles(gas_particles)
 
     rho = make_map(hydro, 1000)
 
-    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
-    plt.savefig('density_map_disk_converter.pdf')
+    plt.imshow(rho.value_in(units.amu / units.cm ** 3))
+    plt.savefig('density_map_disk_converter_nolog.pdf')
     plt.show()
 
     #grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
