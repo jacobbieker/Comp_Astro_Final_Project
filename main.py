@@ -74,6 +74,6 @@ print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.
 
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
-graph = ax.scatter(binaries.x.value_in(units.AU), binaries.x.value_in(units.AU), binaries.x.value_in(units.AU))
+graph = ax.scatter(binaries.blackholes.x.value_in(units.AU), binaries.blackholes.y.value_in(units.AU), binaries.blackholes.z.value_in(units.AU))
 plt.savefig('binaries_positions.pdf')
 # plt.show()
