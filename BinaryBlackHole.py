@@ -7,7 +7,7 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, eccentricity=0.6, inclincation=0.0,
+    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, inner_eccentricity=0.6, inclination=0.0,
                  orbital_fraction_timestep=0.5):
         """
         This model is to generate a binary black hole system when given an initial Particle to split
@@ -53,9 +53,9 @@ class BinaryBlackHole(object):
         # self.orbital_period = 10 | units.yr
         self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr), self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
 
-        self.semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
-        self.eccentricity = eccentricity
-        self.inclincation = inclincation
+        self.inner_semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
+        self.inner_eccentricity = inner_eccentricity
+        self.inclination = inclination
 
         self.timestep = self.orbital_period * orbital_fraction_timestep
 
@@ -63,8 +63,8 @@ class BinaryBlackHole(object):
 
 
         binary_position, binary_velocity = get_position(self.blackholes[0].mass, self.blackholes[1].mass,
-                                                        self.eccentricity, self.semi_major_axis,
-                                                        180, self.inclincation, 180, 0, self.timestep)
+                                                        self.inner_eccentricity, self.inner_semi_major_axis,
+                                                        180, self.inclination, 180, 0, self.timestep)
         self.blackholes[1].position = binary_position
         self.blackholes[1].velocity = binary_velocity
 
@@ -73,7 +73,9 @@ class BinaryBlackHole(object):
         self.merged_blackhole = Particle()
 
         self.blackholes.move_to_center()
-        self.set_in_orbit_around_central_blackhole(central_blackhole_mass, initial_outer_eccentricity, initial_outer_semi_major_axis)
+
+
+        self.initial_outer_semi_major_axis, self.initial_outer_eccentricity = self.set_in_orbit_around_central_blackhole(central_blackhole_mass, self.initial_outer_semi_major_axis, self.initial_outer_eccentricity)
 
 
 
@@ -138,8 +140,8 @@ class BinaryBlackHole(object):
 
 
 
-    def set_in_orbit_around_central_blackhole(self, central_blackhole_mass, eccentricity,
-                                              semi_major_axis, mean_anomaly=0, inclination=0,
+    def set_in_orbit_around_central_blackhole(self, central_blackhole_mass, semi_major_axis,
+                                              eccentricity, mean_anomaly=0, inclination=0,
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
                                               time_to_advance=5 | units.day):
         """

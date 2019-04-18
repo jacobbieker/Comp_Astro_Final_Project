@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # from amuse.datamodel import Particles, Particle
 
 
-number_of_binaries = 100
+number_of_binaries = 1000
 steps_of_inclination = 19
 
 smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
@@ -41,8 +41,8 @@ for i in range(len(sma_incl_list)):
     binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
                                initial_outer_semi_major_axis=sma_incl_list[i][1],
                                initial_outer_eccentricity=0.6,
-                               eccentricity=0.6,
-                               inclincation=sma_incl_list[i][0],
+                               inner_eccentricity=0.6,
+                               inclination=sma_incl_list[i][0],
                                )
 
 
