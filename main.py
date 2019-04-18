@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 number_of_binaries = 100
-steps_of_inclination = 1
+steps_of_inclination = 19
 
 smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
 smbh_mass = smbh.mass
@@ -46,8 +46,7 @@ for i in range(len(sma_incl_list)):
                                )
 
 
-    print (sma_incl_list[i][1].in_(units.parsec))
-    # binaries.blackholes[0].position = -binaries.blackholes[0].position
+    # print (sma_incl_list[i][1].in_(units.parsec))
     all_gravity_particles.add_particles(binaries.blackholes)
 
 all_gravity_particles.add_particle(smbh.super_massive_black_hole)
@@ -74,14 +73,13 @@ while sim_time < end_time:
     channel_from_grav_to_binaries.copy()
 
 
-print(gravity.particles)
+# print(gravity.particles)
 '''
 print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
       '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
       '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
       '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
       '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
-      '\nbinary blackholes position: ', all_gravity_particles.position.in_(units.AU), \
       '\ntotal binary mass: ', binaries.total_mass.in_(units.MSun), \
       '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
       '\nbinary blackhole mass: ', binaries.blackholes.mass.in_(units.MSun), \

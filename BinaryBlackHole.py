@@ -67,13 +67,13 @@ class BinaryBlackHole(object):
                                                         180, self.inclincation, 180, 0, self.timestep)
         self.blackholes[1].position = binary_position
         self.blackholes[1].velocity = binary_velocity
-        self.blackholes.move_to_center()
+
         self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
         self.minimum_distance = 100 * self.get_schwarzschild_radius(self.blackholes[0].mass)
         self.merged_blackhole = Particle()
+
+        self.blackholes.move_to_center()
         self.set_in_orbit_around_central_blackhole(central_blackhole_mass, initial_outer_eccentricity, initial_outer_semi_major_axis)
-
-
 
 
 
@@ -171,7 +171,7 @@ class BinaryBlackHole(object):
         if merge_condition:
             self.merge_blackholes()
 
-        # return semi_major_axis, eccentricity
+        return semi_major_axis, eccentricity
 
 
     def set_merge_conditions(self, blackholes_distance, minimum_distance):
