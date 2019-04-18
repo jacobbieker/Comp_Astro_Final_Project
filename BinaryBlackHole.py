@@ -7,7 +7,7 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, eccentricity=0.0, inclincation=0.0,
+    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, eccentricity=0.6, inclincation=0.0,
                  orbital_fraction_timestep=0.5):
         """
         This model is to generate a binary black hole system when given an initial Particle to split
@@ -59,16 +59,28 @@ class BinaryBlackHole(object):
 
         self.timestep = self.orbital_period * orbital_fraction_timestep
 
+
+
+
         binary_position, binary_velocity = get_position(self.blackholes[0].mass, self.blackholes[1].mass,
                                                         self.eccentricity, self.semi_major_axis,
                                                         180, self.inclincation, 180, 0, self.timestep)
         self.blackholes[1].position = binary_position
         self.blackholes[1].velocity = binary_velocity
         self.blackholes.move_to_center()
-        self.merged_blackhole = Particle()
-
         self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
         self.minimum_distance = 100 * self.get_schwarzschild_radius(self.blackholes[0].mass)
+        self.merged_blackhole = Particle()
+        self.set_in_orbit_around_central_blackhole(central_blackhole_mass, initial_outer_eccentricity, initial_outer_semi_major_axis)
+
+
+
+
+
+
+
+
+
 
     def particles(self):
         return self.blackholes
@@ -110,8 +122,8 @@ class BinaryBlackHole(object):
         :return:
         """
         try:
-            self.blackholes[0].position -= new_center_of_mass_velocity
-            self.blackholes[1].position -= new_center_of_mass_velocity
+            self.blackholes[0].velocity -= new_center_of_mass_velocity
+            self.blackholes[1].velocity -= new_center_of_mass_velocity
         except:
             # Need to convert to a list with units, instead of a list of elements with units
             for index, element in enumerate(new_center_of_mass_velocity):
@@ -126,7 +138,7 @@ class BinaryBlackHole(object):
 
 
 
-    def set_in_orbit_around_central_blackhole(self, central_blackhole, eccentricity,
+    def set_in_orbit_around_central_blackhole(self, central_blackhole_mass, eccentricity,
                                               semi_major_axis, mean_anomaly=0, inclination=0,
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
                                               time_to_advance=5 | units.day):
@@ -143,7 +155,7 @@ class BinaryBlackHole(object):
         :return:
         """
 
-        binary_orbital_position, binary_orbital_velocity = get_position(central_blackhole.mass,
+        binary_orbital_position, binary_orbital_velocity = get_position(central_blackhole_mass,
                                                                         self.blackholes.mass.sum(),
                                                                         ecc=eccentricity,
                                                                         semi=semi_major_axis,
@@ -159,7 +171,7 @@ class BinaryBlackHole(object):
         if merge_condition:
             self.merge_blackholes()
 
-        return semi_major_axis, eccentricity
+        # return semi_major_axis, eccentricity
 
 
     def set_merge_conditions(self, blackholes_distance, minimum_distance):

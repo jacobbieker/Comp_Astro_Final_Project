@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 number_of_binaries = 100
-steps_of_inclination = 19
+steps_of_inclination = 1
 
 smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
 smbh_mass = smbh.mass
@@ -53,6 +53,7 @@ for i in range(len(sma_incl_list)):
 all_gravity_particles.add_particle(smbh.super_massive_black_hole)
 
 converter = nbody_system.nbody_to_si(all_gravity_particles.mass.sum(), all_gravity_particles.virial_radius())
+'''
 gravity = ph4(converter)
 gravity.particles.add_particles(all_gravity_particles)
 channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_gravity_particles)
@@ -74,7 +75,7 @@ while sim_time < end_time:
 
 
 print(gravity.particles)
-
+'''
 print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
       '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
       '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
@@ -94,4 +95,4 @@ graph = ax.scatter(all_gravity_particles.x.value_in(units.parsec), all_gravity_p
 ax.scatter(0,0,0, color='red')
 plt.savefig('binaries_positions.pdf')
 plt.show()
-gravity.stop()
+# gravity.stop()
