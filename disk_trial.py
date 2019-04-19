@@ -1,6 +1,6 @@
 from __future__ import print_function
 from amuse.lab import *
-from Gadget2_Extended import Gadget2_Extended
+from Gadget2_Gravity import Gadget2_Gravity
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from matplotlib import pyplot as plt
 import numpy  as np
@@ -56,8 +56,8 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     gas_particles.move_to_center()
 
-    hydro = Gadget2_Extended(radius=5 | units.AU, convert_nbody=gadget_convert,
-                    number_of_workers=6)
+    hydro = Gadget2_Gravity(radius=5 | units.AU, convert_nbody=gadget_convert,
+                            number_of_workers=6)
     hydro.add_particles(gas_particles)
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
