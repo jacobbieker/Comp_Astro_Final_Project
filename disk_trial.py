@@ -1,8 +1,6 @@
 from __future__ import print_function
 from amuse.lab import *
-from amuse.community.gadget2.interface import Gadget2
 from Gadget2_Extended import Gadget2_Extended
-from amuse.community.fi.interface import Fi
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from matplotlib import pyplot as plt
 import numpy  as np
@@ -58,20 +56,23 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     gas_particles.move_to_center()
 
-    hydro = Gadget2_Extended(radius=10 | units.AU, convert_nbody=gadget_convert,
-                    )
+    hydro = Gadget2_Extended(radius=40 | units.AU, convert_nbody=gadget_convert,
+                    number_of_workers=6)
     hydro.gas_particles.add_particles(gas_particles)
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 
     grav = ph4(convert_nbody=grav_converter)
     grav.particles.add_particle(smbh.super_massive_black_hole)
-    bridge = Bridge()
+    bridge = Bridge(verbose=True)
     bridge.timestep = 100 | units.yr
     bridge.add_system(hydro, (grav, ))
     bridge.add_system(grav, (hydro,))
 
-    bridge.evolve_model(0.1 | units.Myr)
+    bridge.evolve_model(1000 | units.yr)
+    bridge.evolve_model(500 | units.yr)
+    grav.stop()
+    hydro.stop()
 
     rho = make_map(hydro, 100)
 

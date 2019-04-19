@@ -26,6 +26,8 @@ class Gadget2_Extended(Gadget2):
         total_mass = nearby_particles.mass.sum()
 
         # GMm/r^2
-        grav_acc = (constants.G*total_mass)/((center_of_mass - center_point)**2)
-
-        return grav_acc
+        x_y_z = [center_of_mass[0].value_in(center_of_mass.unit)-center_point[0].value_in(center_of_mass.unit),
+                 center_of_mass[1].value_in(center_of_mass.unit)-center_point[1].value_in(center_of_mass.unit),
+                 center_of_mass[2].value_in(center_of_mass.unit)-center_point[2].value_in(center_of_mass.unit)] | center_of_mass.unit
+        ax,ay,az = (constants.G*total_mass)/((x_y_z)**2)
+        return ax,ay,az
