@@ -56,7 +56,7 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     gas_particles.move_to_center()
 
-    hydro = Gadget2_Gravity(radius=5 | units.AU, convert_nbody=gadget_convert,
+    hydro = Gadget2_Gravity(convert_nbody=gadget_convert,
                             number_of_workers=6)
     hydro.add_particles(gas_particles)
 

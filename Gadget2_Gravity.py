@@ -3,9 +3,8 @@ from amuse.couple.bridge import CalculateFieldForParticles
 
 
 class Gadget2_Gravity(Gadget2):
-    def __init__(self, radius=None, unit_converter=None, mode='normal', **options):
+    def __init__(self, unit_converter=None, mode='normal', **options):
         Gadget2.__init__(self, unit_converter=unit_converter, mode=mode, **options)
-        self.radius_for_gravity_calc = radius
 
     def get_gravity_at_point(self, radius, x, y, z):
         field_code = CalculateFieldForParticles(particles=self.gas_particles)
