@@ -46,31 +46,31 @@ def main(N, Mtot, Rvir, t_end, dt):
     disk_mass_fraction = 0.1
     disk_convert = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, inner_boundary)
     gadget_convert = nbody_system.nbody_to_si(disk_mass_fraction*smbh.super_massive_black_hole.mass, outer_boundary)
-    gas_particles = ProtoPlanetaryDisk(100000,
+    gas_particles = ProtoPlanetaryDisk(10000,
                                        convert_nbody=disk_convert,
                                        densitypower=1.0,
                                        Rmin=1.,
-                                       Rmax=1e4,
+                                       Rmax=inner_boundary/outer_boundary,
                                        q_out=1.0,
-                                       discfraction=0.1).result
+                                       discfraction=disk_mass_fraction).result
 
     gas_particles.move_to_center()
 
-    hydro = Gadget2_Extended(radius=40 | units.AU, convert_nbody=gadget_convert,
+    hydro = Gadget2_Extended(radius=5 | units.AU, convert_nbody=gadget_convert,
                     number_of_workers=6)
-    hydro.gas_particles.add_particles(gas_particles)
+    hydro.add_particles(gas_particles)
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 
     grav = ph4(convert_nbody=grav_converter)
     grav.particles.add_particle(smbh.super_massive_black_hole)
-    bridge = Bridge(verbose=True)
-    bridge.timestep = 100 | units.yr
+    bridge = Bridge(verbose=True, use_threading=True)
+    bridge.timestep = 1 | units.day
     bridge.add_system(hydro, (grav, ))
     bridge.add_system(grav, (hydro,))
-
-    bridge.evolve_model(1000 | units.yr)
-    bridge.evolve_model(500 | units.yr)
+    print("Start Bridge", flush=True)
+    bridge.evolve_model(10 | units.yr)
+    bridge.evolve_model(5 | units.yr)
     grav.stop()
     hydro.stop()
 
