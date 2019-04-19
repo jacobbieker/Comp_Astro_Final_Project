@@ -1,10 +1,14 @@
 from __future__ import print_function
 from amuse.lab import *
 from amuse.community.gadget2.interface import Gadget2
+from Gadget2_Extended import Gadget2_Extended
+from amuse.community.fi.interface import Fi
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
 from matplotlib import pyplot as plt
 import numpy  as np
-
+from SuperMassiveBlackHole import SuperMassiveBlackHole
+from amuse.couple.bridge import Bridge
+from amuse.community.ph4.interface import ph4
 
 def gas_sphere(N, Mtot, Rvir):
     converter = nbody_system.nbody_to_si(Mtot, Rvir)
@@ -36,35 +40,17 @@ def make_map(hydro, grid_points=100, L=1):
 
     return rho
 
-
-#
-#
-# def plot_hydro(time, sph, i, L=10):
-#     x_label = "x [pc]"
-#     y_label = "y [pc]"
-#     # fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12)
-#
-# 	fig=pyplot.figure(figsize=(12,12))
-#
-#     rho=make_map(sph,N=200,L=L)
-#     pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
-#     pyplot.savefig("GMC_"+str(i)+".png")
-# #    subplot.set_title("GMC at zero age")
-# #pyplot.title("Molecular cloud at time="+time.as_string_in(units.Myr))
-# #pyplot.xlabel("x [pc]")
-# #pyplot.ylabel("x [pc]")
-# #pyplot.title("GMC at time="+time.as_string_in(units.Myr))
-# #pyplot.savefig("GMC_"+str(i)+".png")
-
-
 def main(N, Mtot, Rvir, t_end, dt):
-    gas, converter = gas_sphere(N, Mtot, Rvir)
     from amuse.ext.protodisk import ProtoPlanetaryDisk
-
-    converter = nbody_system.nbody_to_si(1e7 | units.MSun, 100 | units.AU)
+    smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
+    inner_boundary = smbh.radius * 100
+    outer_boundary = smbh.radius * 100000
+    disk_mass_fraction = 0.1
+    disk_convert = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, inner_boundary)
+    gadget_convert = nbody_system.nbody_to_si(disk_mass_fraction*smbh.super_massive_black_hole.mass, outer_boundary)
     gas_particles = ProtoPlanetaryDisk(100000,
-                                       convert_nbody=converter,
-                                       densitypower=1.5,
+                                       convert_nbody=disk_convert,
+                                       densitypower=1.0,
                                        Rmin=1.,
                                        Rmax=1e4,
                                        q_out=1.0,
@@ -72,17 +58,29 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     gas_particles.move_to_center()
 
-    hydro = Gadget2(unit_converter=nbody_system.nbody_to_si(1e6 | units.MSun, 100*1e4 | units.AU),
-                    mode='normal', number_of_workers=8)
+    hydro = Gadget2_Extended(radius=10 | units.AU, convert_nbody=gadget_convert,
+                    )
     hydro.gas_particles.add_particles(gas_particles)
 
-    rho = make_map(hydro, 1000)
+    grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
+
+    grav = ph4(convert_nbody=grav_converter)
+    grav.particles.add_particle(smbh.super_massive_black_hole)
+    bridge = Bridge()
+    bridge.timestep = 100 | units.yr
+    bridge.add_system(hydro, (grav, ))
+    bridge.add_system(grav, (hydro,))
+
+    bridge.evolve_model(0.1 | units.Myr)
+
+    rho = make_map(hydro, 100)
 
     plt.imshow(rho.value_in(units.amu / units.cm ** 3))
     plt.savefig('density_map_disk_converter_nolog.pdf')
     plt.show()
 
-    #grid = convert_SPH_to_grid(hydro, (100,100,100), do_scale=True)
+    grid = convert_SPH_to_grid(hydro, (100,100,250), do_scale=True)
+
 
     #rho = make_map(hydro, 100)
     '''

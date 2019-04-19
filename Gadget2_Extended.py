@@ -1,8 +1,31 @@
 from amuse.community.gadget2.interface import Gadget2
-
+import numpy as np
+from amuse.units import constants
 
 class Gadget2_Extended(Gadget2):
-    def __init__(self, **options):
-        super().__init__(**options)
-        self.__init__()
+    def __init__(self, radius=None, unit_converter=None, mode='normal', **options):
+        Gadget2.__init__(self, unit_converter=unit_converter, mode=mode, **options)
+        self.radius_for_gravity_calc = radius
 
+    def get_gravity_at_point(self, alpha, x, y, z):
+        if self.radius_for_gravity_calc is None:
+            self.radius_for_gravity_calc = 2. | x.unit
+        center_point = np.asarray([x.value_in(x.unit), y.value_in(x.unit),z.value_in(x.unit)]) | x.unit
+        print(center_point, flush=True)
+        print("Radius: {}".format(self.radius_for_gravity_calc))
+        #for i, particle in enumerate(self.gas_particles):
+        #    print("Particle: {}\n Loc: {}\n Distance: {}\n".format(i, particle.position, (particle.position - center_point).length()), flush=True)
+        nearby_particles = self.gas_particles.select(
+            lambda r: np.abs((r - center_point).length()) < self.radius_for_gravity_calc, ["position"])
+        print(len(nearby_particles), flush=True)
+
+        # Now get center of mass of the particles
+        # Then calculate acceleration from that "particle" to the point
+
+        center_of_mass = nearby_particles.center_of_mass()
+        total_mass = nearby_particles.mass.sum()
+
+        # GMm/r^2
+        grav_acc = (constants.G*total_mass)/((center_of_mass - center_point)**2)
+
+        return grav_acc
