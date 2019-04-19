@@ -58,7 +58,7 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     hydro = Gadget2_Gravity(convert_nbody=gadget_convert,
                             number_of_workers=6)
-    hydro.add_particles(gas_particles)
+    hydro.gas_particles.add_particles(gas_particles)
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 

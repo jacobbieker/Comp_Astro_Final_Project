@@ -14,5 +14,3 @@ class Gadget2_Gravity(Gadget2):
         field_code = CalculateFieldForParticles(particles=self.gas_particles)
         return field_code.get_potential_at_point(radius, x, y, z)
 
-    def add_particles(self, particles):
-        self.gas_particles.add_particles(particles)
