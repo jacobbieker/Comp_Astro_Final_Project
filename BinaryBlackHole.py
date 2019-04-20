@@ -78,12 +78,6 @@ class BinaryBlackHole(object):
         self.initial_outer_semi_major_axis, self.initial_outer_eccentricity = self.set_in_orbit_around_central_blackhole(central_blackhole_mass, self.initial_outer_semi_major_axis, self.initial_outer_eccentricity)
 
 
-
-
-
-
-
-
     def particles(self):
         return self.blackholes
 

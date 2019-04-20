@@ -7,6 +7,8 @@ import numpy  as np
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from amuse.couple.bridge import Bridge
 from amuse.community.ph4.interface import ph4
+from BinaryBlackHole import BinaryBlackHole
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 def gas_sphere(N, Mtot, Rvir):
     converter = nbody_system.nbody_to_si(Mtot, Rvir)
@@ -42,11 +44,11 @@ def main(N, Mtot, Rvir, t_end, dt):
     from amuse.ext.protodisk import ProtoPlanetaryDisk
     smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
     inner_boundary = smbh.radius * 100
-    outer_boundary = smbh.radius * 100000
+    outer_boundary = smbh.radius * 1000000
     disk_mass_fraction = 0.1
     disk_convert = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, inner_boundary)
     gadget_convert = nbody_system.nbody_to_si(disk_mass_fraction*smbh.super_massive_black_hole.mass, outer_boundary)
-    gas_particles = ProtoPlanetaryDisk(10000,
+    gas_particles = ProtoPlanetaryDisk(100000,
                                        convert_nbody=disk_convert,
                                        densitypower=1.0,
                                        Rmin=1.,
@@ -56,20 +58,43 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     gas_particles.move_to_center()
 
+    blackhole_masses = [30,30]
+
+    binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh.super_massive_black_hole.mass,
+                             initial_outer_semi_major_axis=inner_boundary * 5,
+                             inner_eccentricity=0.6,
+                             inclination=45.,
+                             )
+    gen_convert = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
     hydro = Gadget2_Gravity(convert_nbody=gadget_convert,
-                            number_of_workers=6)
+                            number_of_workers=10)
+    hydro.parameters.time_max = 2*gen_convert.to_generic(5 | units.Myr)
     hydro.gas_particles.add_particles(gas_particles)
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 
-    grav = ph4(convert_nbody=grav_converter)
-    grav.particles.add_particle(smbh.super_massive_black_hole)
+    grav = ph4(convert_nbody=grav_converter, number_of_workers=2)
+    all_grav = Particles()
+    all_grav.add_particle(smbh.super_massive_black_hole)
+    all_grav.add_particles(binary.blackholes)
+    grav.particles.add_particles(all_grav)
+
+    channl_from_grav_to_particles = grav.particles.new_channel_to(all_grav)
+    channl_to_grav_from_particles = all_grav.new_channel_to(grav.particles)
+    channel_from_hydro_to_disk = hydro.gas_particles.new_channel_to(gas_particles)
+    channel_from_gas_to_disk = gas_particles.new_channel_to(hydro.gas_particles)
+    write_set_to_file(all_grav, "Test_Grav_Particles_Initial.hdf5", "amuse")
+    write_set_to_file(gas_particles, "Test_Gas_Particles_Initial.hdf5", "amuse")
     bridge = Bridge(verbose=True, use_threading=True)
-    bridge.timestep = 1 | units.day
+    bridge.timestep = 1000 | units.yr
     bridge.add_system(hydro, (grav, ))
     bridge.add_system(grav, (hydro,))
     print("Start Bridge", flush=True)
-    bridge.evolve_model(10 | units.yr)
+    bridge.evolve_model(5 | units.Myr)
+    channel_from_hydro_to_disk.copy()
+    channl_from_grav_to_particles.copy()
+    write_set_to_file(all_grav, "Test_Grav_Particles_Final.hdf5", "amuse")
+    write_set_to_file(gas_particles, "Test_Gas_Particles_Final.hdf5", "amuse")
     bridge.evolve_model(5 | units.yr)
     grav.stop()
     hydro.stop()
