@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # from amuse.units import units, constants
 # from amuse.datamodel import Particles, Particle
 
-def main(number_of_binaries = 1000, steps_of_inclination = 19):
+def main(number_of_binaries = 1000, steps_of_inclination = 19, random_binaries_generation = False):
 
     smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
     smbh_mass = smbh.mass
@@ -22,53 +22,55 @@ def main(number_of_binaries = 1000, steps_of_inclination = 19):
     outer_boundary = (smbh.radius*1e6).in_(units.parsec)
 
     all_gravity_particles = Particles()
-    # # |------------------------generate binaries with an initial outer semi major axis and initial outer inclination given by an array------------------------|
-    # initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination)
-    # initial_outer_semi_major_axis = initial_outer_semi_major_axis[1:]
-    # initial_inclination = np.linspace(0,180, steps_of_inclination)
-    #
-    # sma_incl_list = []
-    # for i in range(len(initial_inclination)):
-    #     for j in range(len(initial_outer_semi_major_axis)):
-    #         sma_incl_list.append([initial_inclination[i], initial_outer_semi_major_axis[j]])
-    #
-    # for i in range(len(sma_incl_list)):
-    #     blackhole_masses = [30,30]
-    #
-    #     binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-    #                                initial_outer_semi_major_axis=sma_incl_list[i][1] | (outer_boundary.unit),
-    #                                initial_outer_eccentricity=0.6,
-    #                                inner_eccentricity=0.6,
-    #                                inclination=sma_incl_list[i][0],
-    #                                )
-    #     print (binaries.initial_outer_semi_major_axis)
-    #     all_gravity_particles.add_particles(binaries.blackholes)
-    #
-    # all_gravity_particles.add_particle(smbh.super_massive_black_hole)
-    #
-    # return smbh, binaries, all_gravity_particles
+    # |------------------------generate binaries with an initial outer semi major axis and initial outer inclination given by an array------------------------|
+    if not random_binaries_generation:
+        initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination)
+        initial_outer_semi_major_axis = initial_outer_semi_major_axis[1:]
+        initial_inclination = np.linspace(0,180, steps_of_inclination)
+
+        sma_incl_list = []
+        for i in range(len(initial_inclination)):
+            for j in range(len(initial_outer_semi_major_axis)):
+                sma_incl_list.append([initial_inclination[i], initial_outer_semi_major_axis[j]])
+
+        for i in range(len(sma_incl_list)):
+            blackhole_masses = [30,30]
+
+            binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
+                                       initial_outer_semi_major_axis=sma_incl_list[i][1] | (outer_boundary.unit),
+                                       initial_outer_eccentricity=0.6,
+                                       inner_eccentricity=0.6,
+                                       inclination=sma_incl_list[i][0],
+                                       )
+            print (binaries.initial_outer_semi_major_axis)
+            all_gravity_particles.add_particles(binaries.blackholes)
+
+        all_gravity_particles.add_particle(smbh.super_massive_black_hole)
+
+        return smbh, binaries, all_gravity_particles
     #|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 
 
     # |------------------------generate binaries with random initial outer semi major axis and initial outer inclination ------------------------|
-    for i in range(number_of_binaries):
-        blackhole_masses = [30,30]
-        initial_outer_semi_major_axis = np.random.uniform(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), 1)[0]
-        initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
-        binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-                                   initial_outer_semi_major_axis= initial_outer_semi_major_axis | (outer_boundary.unit),
-                                   initial_outer_eccentricity=0.6,
-                                   inner_eccentricity=0.6,
-                                   inclination=initial_outer_eccentricity,
-                                   )
+    if random_binaries_generation:
+        for i in range(number_of_binaries):
+            blackhole_masses = [30,30]
+            initial_outer_semi_major_axis = np.random.uniform(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), 1)[0]
+            initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
+            binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
+                                       initial_outer_semi_major_axis= initial_outer_semi_major_axis | (outer_boundary.unit),
+                                       initial_outer_eccentricity=0.6,
+                                       inner_eccentricity=0.6,
+                                       inclination=initial_outer_eccentricity,
+                                       )
 
-        print (binaries.initial_outer_semi_major_axis)
-        all_gravity_particles.add_particles(binaries.blackholes)
+            print (binaries.initial_outer_semi_major_axis)
+            all_gravity_particles.add_particles(binaries.blackholes)
 
-    all_gravity_particles.add_particle(smbh.super_massive_black_hole)
+        all_gravity_particles.add_particle(smbh.super_massive_black_hole)
 
-    return smbh, binaries, all_gravity_particles
+        return smbh, binaries, all_gravity_particles
     # |----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 
