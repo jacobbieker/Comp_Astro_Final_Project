@@ -20,31 +20,28 @@ steps_of_inclination = 19
 smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
 smbh_mass = smbh.mass
 
-inner_boundary = smbh.radius*1e2
-outer_boundary = smbh.radius*1e6
-
-print(inner_boundary.in_(units.parsec), outer_boundary.in_(units.parsec))
-
+inner_boundary = (smbh.radius*1e2).in_(units.parsec)
+outer_boundary = (smbh.radius*1e6).in_(units.parsec)
 
 all_gravity_particles = Particles()
-initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination) | (outer_boundary.unit)
+initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination)
 initial_inclination = np.linspace(0,180, steps_of_inclination)
 
 sma_incl_list = []
-
 for i in range(len(initial_inclination)):
     for j in range(len(initial_outer_semi_major_axis)):
         sma_incl_list.append([initial_inclination[i], initial_outer_semi_major_axis[j]])
+
 for i in range(len(sma_incl_list)):
     blackhole_masses = [30,30]
 
     binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh_mass,
-                               initial_outer_semi_major_axis=sma_incl_list[i][1],
+                               initial_outer_semi_major_axis=sma_incl_list[i][1] | (outer_boundary.unit),
                                initial_outer_eccentricity=0.6,
                                inner_eccentricity=0.6,
                                inclination=sma_incl_list[i][0],
                                )
-
+    print (binaries.initial_outer_semi_major_axis)
 
     # print (sma_incl_list[i][1].in_(units.parsec))
     all_gravity_particles.add_particles(binaries.blackholes)
