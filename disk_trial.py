@@ -90,12 +90,14 @@ def main(N, Mtot, Rvir, t_end, dt):
     bridge.add_system(hydro, (grav, ))
     bridge.add_system(grav, (hydro,))
     print("Start Bridge", flush=True)
-    bridge.evolve_model(5 | units.Myr)
-    channel_from_hydro_to_disk.copy()
-    channl_from_grav_to_particles.copy()
-    write_set_to_file(all_grav, "Test_Grav_Particles_Final.hdf5", "amuse")
-    write_set_to_file(gas_particles, "Test_Gas_Particles_Final.hdf5", "amuse")
-    bridge.evolve_model(5 | units.yr)
+    start_time = 0. | units.yr
+    while start_time < 5 | units.Myr:
+        start_time += 10000 | units.yr
+        bridge.evolve_model(start_time)
+        channel_from_hydro_to_disk.copy()
+        channl_from_grav_to_particles.copy()
+        write_set_to_file(all_grav, "Test_Grav_Particles_Final.hdf5", "amuse")
+        write_set_to_file(gas_particles, "Test_Gas_Particles_Final.hdf5", "amuse")
     grav.stop()
     hydro.stop()
 
