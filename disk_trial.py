@@ -1,11 +1,9 @@
 from __future__ import print_function
 from amuse.lab import *
 from Gadget2_Gravity import Gadget2_Gravity
-from amuse.ext.sph_to_grid import convert_SPH_to_grid
-import numpy as np
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from amuse.couple.bridge import Bridge
-from amuse.community.ph4.interface import ph4
+from amuse.community.huayno.interface import Huayno
 from BinaryBlackHole import BinaryBlackHole
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
@@ -17,7 +15,7 @@ def main(N, Mtot, Rvir, t_end, dt):
     disk_mass_fraction = 0.1
     disk_convert = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, inner_boundary)
     gadget_convert = nbody_system.nbody_to_si(disk_mass_fraction*smbh.super_massive_black_hole.mass, outer_boundary)
-    gas_particles = ProtoPlanetaryDisk(100000,
+    gas_particles = ProtoPlanetaryDisk(1000000,
                                        convert_nbody=disk_convert,
                                        densitypower=1.0,
                                        Rmin=1.,
@@ -45,7 +43,7 @@ def main(N, Mtot, Rvir, t_end, dt):
 
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 
-    grav = ph4(convert_nbody=grav_converter, number_of_workers=2)
+    grav = Huayno(convert_nbody=grav_converter, number_of_workers=2)
     grav.particles.add_particles(all_grav)
 
     channl_from_grav_to_particles = grav.particles.new_channel_to(all_grav)
