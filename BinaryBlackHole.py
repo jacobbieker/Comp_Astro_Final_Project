@@ -7,7 +7,8 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis, initial_outer_eccentricity=0.6, inner_eccentricity=0.6, inclination=0.0,
+    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis,
+                 initial_outer_eccentricity=0.6, inner_eccentricity=0.6, inclination=0.0,
                  orbital_fraction_timestep=0.5):
         """
         This model is to generate a binary black hole system when given an initial Particle to split
@@ -47,20 +48,20 @@ class BinaryBlackHole(object):
         self.initial_outer_semi_major_axis = initial_outer_semi_major_axis
         self.initial_outer_eccentricity = initial_outer_eccentricity
 
-        self.hill_radius = self.get_hill_radius(self.initial_outer_semi_major_axis, self.initial_outer_eccentricity, self.total_mass, self.central_blackhole.mass)
+        self.hill_radius = self.get_hill_radius(self.initial_outer_semi_major_axis, self.initial_outer_eccentricity,
+                                                self.total_mass, self.central_blackhole.mass)
         self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass)
-        self.binary_min_orbital_period = self.get_orbital_period(1000*self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
+        self.binary_min_orbital_period = self.get_orbital_period(
+            1000 * self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
         # self.orbital_period = 10 | units.yr
-        self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr), self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
+        self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr),
+                                                self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
 
         self.inner_semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
         self.inner_eccentricity = inner_eccentricity
         self.inclination = inclination
 
         self.timestep = self.orbital_period * orbital_fraction_timestep
-
-
-
 
         binary_position, binary_velocity = get_position(self.blackholes[0].mass, self.blackholes[1].mass,
                                                         self.inner_eccentricity, self.inner_semi_major_axis,
@@ -74,9 +75,11 @@ class BinaryBlackHole(object):
 
         self.blackholes.move_to_center()
 
-
-        self.initial_outer_semi_major_axis, self.initial_outer_eccentricity = self.set_in_orbit_around_central_blackhole(central_blackhole_mass, self.initial_outer_semi_major_axis, self.initial_outer_eccentricity)
-
+        self.initial_outer_semi_major_axis, self.initial_outer_eccentricity = self.set_in_orbit_around_central_blackhole(
+            central_blackhole_mass,
+            self.initial_outer_semi_major_axis,
+            self.initial_outer_eccentricity,
+            time_to_advance=np.random.uniform(0.001, 100, size=1) | units.yr)
 
     def particles(self):
         return self.blackholes
@@ -85,13 +88,13 @@ class BinaryBlackHole(object):
         return 2 * np.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()
 
     def get_semi_major_axis(self, total_mass, orbital_period):
-        return (constants.G * total_mass * orbital_period ** 2 / (4*np.pi**2)) ** (1./3.)
+        return (constants.G * total_mass * orbital_period ** 2 / (4 * np.pi ** 2)) ** (1. / 3.)
 
     def get_hill_radius(self, semi_major_axis, eccentricity, total_binary_mass, central_blackhole_mass):
-        return semi_major_axis*(1-eccentricity)*(total_binary_mass/(3*central_blackhole_mass))**(1./3.)
+        return semi_major_axis * (1 - eccentricity) * (total_binary_mass / (3 * central_blackhole_mass)) ** (1. / 3.)
 
     def get_schwarzschild_radius(self, mass):
-        return (2*constants.G*mass)/(constants.c**2)
+        return (2 * constants.G * mass) / (constants.c ** 2)
 
     def set_center_of_mass(self, new_center_of_mass):
         """
@@ -132,8 +135,6 @@ class BinaryBlackHole(object):
         self.set_center_of_mass(center_of_mass)
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
-
-
     def set_in_orbit_around_central_blackhole(self, central_blackhole_mass, semi_major_axis,
                                               eccentricity, mean_anomaly=0, inclination=0,
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
@@ -170,7 +171,6 @@ class BinaryBlackHole(object):
 
         return semi_major_axis, eccentricity
 
-
     def set_merge_conditions(self, blackholes_distance, minimum_distance):
         merge_condition = blackholes_distance < minimum_distance
         return merge_condition
@@ -199,12 +199,8 @@ class BinaryBlackHole(object):
         self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
         self.blackholes.add_particle(self.merged_blackhole[0])
 
-
-
-
         # Need to add these particles to gravity instead of the binaries
         raise NotImplementedError
-
 
     # def merge_particles(self, merge_condition):
     #     if merge_condition:

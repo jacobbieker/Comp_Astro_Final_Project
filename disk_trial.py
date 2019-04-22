@@ -2,43 +2,12 @@ from __future__ import print_function
 from amuse.lab import *
 from Gadget2_Gravity import Gadget2_Gravity
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
-from matplotlib import pyplot as plt
-import numpy  as np
+import numpy as np
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from amuse.couple.bridge import Bridge
 from amuse.community.ph4.interface import ph4
 from BinaryBlackHole import BinaryBlackHole
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-
-def gas_sphere(N, Mtot, Rvir):
-    converter = nbody_system.nbody_to_si(Mtot, Rvir)
-    gas = new_plummer_gas_model(N, convert_nbody=converter)
-    return gas, converter
-
-
-#
-#
-def make_map(hydro, grid_points=100, L=1):
-    x, y = np.indices((grid_points + 1, grid_points + 1))
-
-    x = L * (x.flatten() - grid_points / 2.) / grid_points
-    y = L * (y.flatten() - grid_points / 2.) / grid_points
-    z = x * 0.
-    vx = 0. * x
-    vy = 0. * x
-    vz = 0. * x
-
-    x = units.parsec(x)
-    y = units.parsec(y)
-    z = units.parsec(z)
-    vx = units.kms(vx)
-    vy = units.kms(vy)
-    vz = units.kms(vz)
-
-    rho, rhovx, rhovy, rhovz, rhoe = hydro.get_hydro_state_at_point(x, y, z, vx, vy, vz)
-    rho = rho.reshape((grid_points + 1, grid_points + 1))
-
-    return rho
 
 def main(N, Mtot, Rvir, t_end, dt):
     from amuse.ext.protodisk import ProtoPlanetaryDisk
@@ -59,12 +28,15 @@ def main(N, Mtot, Rvir, t_end, dt):
     gas_particles.move_to_center()
 
     blackhole_masses = [30,30]
-
+    all_grav = Particles()
+    all_grav.add_particle(smbh.super_massive_black_hole)
     binary = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], smbh.super_massive_black_hole.mass,
                              initial_outer_semi_major_axis=inner_boundary * 5,
                              inner_eccentricity=0.6,
                              inclination=45.,
                              )
+    all_grav.add_particles(binary.blackholes)
+
     gen_convert = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
     hydro = Gadget2_Gravity(convert_nbody=gadget_convert,
                             number_of_workers=10)
@@ -74,112 +46,27 @@ def main(N, Mtot, Rvir, t_end, dt):
     grav_converter = nbody_system.nbody_to_si(smbh.super_massive_black_hole.mass, smbh.super_massive_black_hole.radius)
 
     grav = ph4(convert_nbody=grav_converter, number_of_workers=2)
-    all_grav = Particles()
-    all_grav.add_particle(smbh.super_massive_black_hole)
-    all_grav.add_particles(binary.blackholes)
     grav.particles.add_particles(all_grav)
 
     channl_from_grav_to_particles = grav.particles.new_channel_to(all_grav)
-    channl_to_grav_from_particles = all_grav.new_channel_to(grav.particles)
     channel_from_hydro_to_disk = hydro.gas_particles.new_channel_to(gas_particles)
-    channel_from_gas_to_disk = gas_particles.new_channel_to(hydro.gas_particles)
     write_set_to_file(all_grav, "Test_Grav_Particles_Initial.hdf5", "amuse")
     write_set_to_file(gas_particles, "Test_Gas_Particles_Initial.hdf5", "amuse")
     bridge = Bridge(verbose=True, use_threading=True)
     bridge.timestep = 1000 | units.yr
+    start_time = 0. | units.Myr
+    timestep = 10000 | units.yr
+    end_time = 10 | units.Myr
     bridge.add_system(hydro, (grav, ))
     bridge.add_system(grav, (hydro,))
-    print("Start Bridge", flush=True)
-    bridge.evolve_model(5 | units.Myr)
-    channel_from_hydro_to_disk.copy()
-    channl_from_grav_to_particles.copy()
-    write_set_to_file(all_grav, "Test_Grav_Particles_Final.hdf5", "amuse")
-    write_set_to_file(gas_particles, "Test_Gas_Particles_Final.hdf5", "amuse")
-    bridge.evolve_model(5 | units.yr)
+    while start_time < end_time:
+        bridge.evolve_model(5 | units.Myr)
+        channel_from_hydro_to_disk.copy()
+        channl_from_grav_to_particles.copy()
+        write_set_to_file(all_grav, "Test_Grav_Particles_Final.hdf5", "amuse")
+        write_set_to_file(gas_particles, "Test_Gas_Particles_Final.hdf5", "amuse")
     grav.stop()
     hydro.stop()
-
-    rho = make_map(hydro, 100)
-
-    plt.imshow(rho.value_in(units.amu / units.cm ** 3))
-    plt.savefig('density_map_disk_converter_nolog.pdf')
-    plt.show()
-
-    grid = convert_SPH_to_grid(hydro, (100,100,250), do_scale=True)
-
-
-    #rho = make_map(hydro, 100)
-    '''
-    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
-    plt.savefig('density_map_gridded_converter.pdf')
-    plt.show()
-
-    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=0)
-
-    plt.imshow(summed_density)
-    plt.title("X")
-    plt.show()
-
-    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=1)
-
-    plt.imshow(summed_density)
-    plt.title("Y")
-    plt.show()
-
-    summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=2)
-
-    plt.imshow(summed_density)
-    plt.title("Z")
-    plt.show()
-    '''
-    #write_set_to_file(grid, "Unitless_Disk_test.h5", "hdf5")
-
-    print("Did Grid")
-
-    #rho = make_map(hydro, 100)
-
-    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
-    plt.savefig('density_map.pdf')
-    plt.show()
-    Etot_init = hydro.kinetic_energy \
-                + hydro.potential_energy + hydro.thermal_energy
-
-    time = 0 | units.yr
-    while time < t_end:
-        time += dt
-        hydro.evolve_model(time)
-        print(time, flush=True)
-    write_set_to_file(hydro.particles, "hydro.h5", "hdf5")
-
-    Ekin = hydro.kinetic_energy
-    Epot = hydro.potential_energy
-    Eth = hydro.thermal_energy
-    Etot = Ekin + Epot + Eth
-    Q = (Ekin + Eth) / Epot
-    dE = (Etot_init - Etot) / Etot
-    com = hydro.gas_particles.center_of_mass()
-
-    print("T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), end=' ')
-    print("E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun))
-
-    x_gas = gas.x.value_in(units.AU)
-    y_gas = gas.y.value_in(units.AU)
-    z_gas = gas.z.value_in(units.AU)
-
-    z_0 = 0. * x_gas
-    vx_gas = (0. | (units.Hz)) * x_gas
-    vy_gas = (0. | (units.Hz)) * x_gas
-    vz_gas = (0. | (units.Hz)) * x_gas
-
-    rho = make_map(hydro)
-
-    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm ** 3)))
-    plt.savefig('density_map.pdf')
-    plt.show()
-
-    hydro.stop()
-
-
 # plt.scatter(x_gas, y_gas, z_gas)
 # plt.savefig('disk_scatter.png')
 # plt.show()
@@ -208,5 +95,4 @@ def new_option_parser():
 
 if __name__ in ("__main__"):
     o, arguments = new_option_parser().parse_args()
-    print(o.__dict__)
     main(**o.__dict__)

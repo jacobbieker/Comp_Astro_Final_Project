@@ -65,6 +65,7 @@ def main(number_of_binaries = 1, steps_of_inclination = 19, random_binaries_gene
                                        initial_outer_eccentricity=0.6,
                                        inner_eccentricity=0.6,
                                        inclination=initial_outer_eccentricity,
+                                       time
                                        )
 
             print (binaries.initial_outer_semi_major_axis)
