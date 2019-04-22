@@ -1,5 +1,4 @@
-from amuse.community.gadget2.interface import Gadget2
-from amuse.community.fi.interface import Fi
+from Gadget2_Gravity import Gadget2_Gravity
 from amuse.units import units, constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 import numpy as np
@@ -36,7 +35,7 @@ class AccretionDisk(object):
         self.gadget_converter = gadget_converter
         self.disk_converter = disk_converter
         self.gen_convert = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
-        self.code = Gadget2(self.gadget_converter, number_of_workers=number_of_workers)
+        self.code = Gadget2_Gravity(self.gadget_converter, number_of_workers=number_of_workers)
         self.code.parameters.time_max = 2*self.gen_convert.to_generic(end_time)
         self.number_of_particles = number_of_particles
         self.disk_min = disk_min

@@ -37,12 +37,6 @@ class BinaryBlackHolesWithAGN(object):
                                   powerlaw=disk_powerlaw,
                                   end_time=self.end_time)
         write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5".format(self.smbh.super_massive_black_hole.mass.value_in(units.MSun)), "hdf5")
-        gadget_convert = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
-        gen_convert = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
-        hydro = Gadget2_Gravity(convert_nbody=gadget_convert,
-                                number_of_workers=10)
-        hydro.parameters.time_max = 2*gen_convert.to_generic(5 | units.Myr)
-        hydro.gas_particles.add_particles(self.disk.gas_particles)
 
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
