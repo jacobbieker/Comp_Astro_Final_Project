@@ -8,12 +8,13 @@ from amuse.lab import Particle, units, nbody_system, constants, Particles
 from amuse.community.huayno.interface import Huayno
 from amuse.community.ph4.interface import ph4
 from mpl_toolkits.mplot3d import Axes3D
+from amuse.io import write_set_to_file
 
 
 # from amuse.units import units, constants
 # from amuse.datamodel import Particles, Particle
 
-def main(number_of_binaries = 1000, steps_of_inclination = 19, random_binaries_generation = False):
+def main(number_of_binaries = 1, steps_of_inclination = 19, random_binaries_generation = True):
 
     smbh = SuperMassiveBlackHole(mass=1e6 | units.MSun)
     smbh_mass = smbh.mass
@@ -22,6 +23,7 @@ def main(number_of_binaries = 1000, steps_of_inclination = 19, random_binaries_g
     outer_boundary = (smbh.radius*1e6).in_(units.parsec)
 
     all_gravity_particles = Particles()
+
     # |------------------------generate binaries with an initial outer semi major axis and initial outer inclination given by an array------------------------|
     if not random_binaries_generation:
         initial_outer_semi_major_axis = np.linspace(inner_boundary.value_in(outer_boundary.unit), outer_boundary.value_in(outer_boundary.unit), number_of_binaries//steps_of_inclination)
@@ -75,38 +77,34 @@ def main(number_of_binaries = 1000, steps_of_inclination = 19, random_binaries_g
 
 
 smbh, binaries, all_gravity_particles = main()
-'''
 converter = nbody_system.nbody_to_si(all_gravity_particles.mass.sum(), all_gravity_particles.virial_radius())
-gravity = ph4(converter)
+gravity = Huayno(converter, number_of_workers=2)
 gravity.particles.add_particles(all_gravity_particles)
 channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_gravity_particles)
 channel_from_binaries_to_grav = all_gravity_particles.new_channel_to(gravity.particles)
 
 # ----------------------- must become parameter -----------------------#
-end_time = 10 | units.Myr
+end_time = 1000 | units.Myr
 timestep = 1 | end_time.unit
 # ---------------------------------------------------------------------#
-sim_time = 0 | end_time.unit
 
+sim_time = 0 | end_time.unit
 while sim_time < end_time:
     sim_time += timestep
-    print('lego')
     gravity.evolve_model(sim_time)
-    print('letsgo')
-
+    print (sim_time)
     channel_from_grav_to_binaries.copy()
-
+    write_set_to_file(gravity.particles, "main_gravity.h5", "hdf5")
 
 # print(gravity.particles)
-'''
-print('initial outer semi major axis: ', binaries.initial_outer_semi_major_axis.in_(units.AU), \
-      '\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
-      '\ninitial outereccentricity: ', binaries.initial_outer_eccentricity, \
+
+print('\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
+      '\nbinaries inner semi major axis: ', binaries.inner_semi_major_axis.in_(units.AU), \
       '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
       '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
+      '\nbinaries orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
       '\ntotal binary mass: ', binaries.total_mass.in_(units.MSun), \
       '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
-      '\nbinary blackhole mass: ', binaries.blackholes.mass.in_(units.MSun), \
       '\nsmbh radius: ', smbh.radius.in_(units.AU), \
       '\nbinary blackhole distance: ', binaries.blackholes_distance.in_(units.AU))
 

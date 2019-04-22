@@ -165,6 +165,7 @@ class BinaryBlackHole(object):
 
         merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
         if merge_condition:
+            print('binaries merged')
             self.merge_blackholes()
 
         return semi_major_axis, eccentricity
