@@ -48,7 +48,7 @@ class BinaryBlackHole(object):
                                                 self.total_mass, self.central_blackhole.mass)
         self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass)
         self.binary_min_orbital_period = self.get_orbital_period(
-            1000 * self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
+            1000000 * self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
         # Restricting the initial inner orbital period
         self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr),
                                                 self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
