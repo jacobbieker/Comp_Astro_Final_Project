@@ -7,7 +7,7 @@ from amuse.units import units, constants
 
 class BinaryBlackHole(object):
 
-    def __init__(self, mass_one, mass_two, central_blackhole_mass, initial_outer_semi_major_axis,
+    def __init__(self, central_blackhole_mass, initial_outer_semi_major_axis, mass_one=30. | units.MSun, mass_two=30. | units.MSun,
                  initial_outer_eccentricity=0.6, inner_eccentricity=0.6, inclination=0.0,
                  orbital_fraction_timestep=0.5):
         """
@@ -36,8 +36,8 @@ class BinaryBlackHole(object):
         self.central_blackhole.mass = central_blackhole_mass
 
         self.blackholes = Particles(2)
-        self.blackholes[0].mass = mass_one | units.MSun
-        self.blackholes[1].mass = mass_two | units.MSun
+        self.blackholes[0].mass = mass_one
+        self.blackholes[1].mass = mass_two
         self.total_mass = self.blackholes.mass.sum()
 
         self.initial_outer_semi_major_axis = initial_outer_semi_major_axis

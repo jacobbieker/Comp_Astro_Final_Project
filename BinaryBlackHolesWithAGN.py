@@ -3,10 +3,15 @@ from AccretionDisk import AccretionDisk
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from BinaryBlackHole import BinaryBlackHole
 from amuse.couple.bridge import Bridge
+from amuse.datamodel import Particles, Particle
 from amuse.community.huayno.interface import Huayno
 import numpy as np
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
+
+
+def grouped(iterable, n):
+    return zip(*[iter(iterable)]*n)
 
 
 class SuperMassiveBlackHolePotential(object):
@@ -35,7 +40,7 @@ class SuperMassiveBlackHolePotential(object):
 class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
-                 radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
+                 blackhole_masses = 30 | units.MSun, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.smbh_potential = SuperMassiveBlackHolePotential(M=self.smbh.super_massive_black_hole.mass, R=self.smbh.radius)
@@ -43,9 +48,8 @@ class BinaryBlackHolesWithAGN(object):
         self.outer_boundary = self.smbh.radius * 100000
         self.steps_of_inclination = steps_of_inclination
         self.end_time = end_time
-        self.binary_codes = []
-        self.binary_code_from_channels = []
-        self.binary_code_to_channels = []
+        self.blackhole_mass = blackhole_masses
+        self.minimum_distance = 0 | units.m
         self.number_of_gas_particles = number_of_gas_particles
         self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
         self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
@@ -61,7 +65,6 @@ class BinaryBlackHolesWithAGN(object):
 
         self.binaries = Particles()
         self.merged_blackholes = Particles()
-        self.minimum_distance = 100 * self.get_schwarzschild_radius(30 | units.MSun)
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
         self.hydro_code = self.disk.hydro_code
@@ -106,6 +109,16 @@ class BinaryBlackHolesWithAGN(object):
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
 
+            for blackhole_one, blackhole_two in grouped(self.binaries, 2):
+                merging_blackholes = Particles()
+                merging_blackholes.add_particles([blackhole_one, blackhole_two])
+                blackholes_distance = (merging_blackholes[0].position - merging_blackholes[1].position).length()
+                merge_condition = self.set_merge_conditions(blackholes_distance, self.minimum_distance)
+
+                if merge_condition:
+                    print('binaries merged')
+                    self.merge_blackholes(merging_blackholes)
+
         self.grav_code.stop()
         self.disk.hydro_code.stop()
 
@@ -114,17 +127,18 @@ class BinaryBlackHolesWithAGN(object):
         """
         Generate a number of blackhole binaries with random initial outer semi major axis and inclination within the boundaries
         """
-        blackhole_masses = [30,30]
+        blackhole_masses = [self.blackhole_mass, self.blackhole_mass]
         for _ in range(self.number_of_binaries):
             # Make sure to generate the binaries randomly but within the disk radius and not too close the SMBH
             initial_outer_semi_major_axis = np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
             initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
-            binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
+            binaries = BinaryBlackHole(self.smbh.super_massive_black_hole.mass, mass_one=blackhole_masses[0], mass_two=blackhole_masses[1],
                                        initial_outer_semi_major_axis= initial_outer_semi_major_axis | (self.outer_boundary.unit),
                                        initial_outer_eccentricity=0.6,
                                        inner_eccentricity=0.6,
                                        inclination=initial_outer_eccentricity,
                                        )
+            self.minimum_distance = 100 * binaries.get_schwarzschild_radius(self.blackhole_mass)
 
             # Add the particles in the gravity particles
             self.all_grav_particles.add_particles(binaries.blackholes)
@@ -142,44 +156,18 @@ class BinaryBlackHolesWithAGN(object):
         self.bridge.timestep = timestep
         self.bridge.add_system(self.grav_code, (self.smbh_potential,))
         self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
-        # self.bridge.add_system(self.grav_code, (self.hydro_code,))
 
         return self.bridge
-
-
-
-
-
-
-
-
-
-    self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
-    merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
-
-    if merge_condition:
-        print('binaries merged')
-        self.merge_blackholes()
-
 
     def set_merge_conditions(self, blackholes_distance, minimum_distance):
         merge_condition = blackholes_distance < minimum_distance
         return merge_condition
 
-    def merge_blackholes(self, merging_blackholes, fraction_of_total_mass=0.95):
+    def merge_blackholes(self, merging_blackholes):
         """
-        Merges the binary particles into a single particle after merging
-        :param fraction_of_total_mass: sets the mass of the merged blackhole
+        Merges blackholes and removes them from the simulation
+        :param merging_blackholes: Particle set that contains the blackholes to merge and remove
         :return:
         """
-
-        merged_blackhole_location = merging_blackholes.center_of_mass_position()
-        merged_blackhole_velocity = merging_blackholes.center_of_mass_velocity()
-        # Set the initial position and velocity of the merged_blackholes to be the same as the center of mass position and velocity
-        merged_blackhole = Particle()
-        merged_blackhole.mass = fraction_of_total_mass * self.total_mass
-        merged_blackhole.position = merged_blackhole_location
-        merged_blackhole.velocity = merged_blackhole_velocity
-
-        self.grav_code.particles.remove_particles(self.blackholes[0], self.blackholes[1])
-        self.grav_code.particles.add_particle(merged_blackhole)
+        self.grav_code.particles.remove_particles(merging_blackholes)
+        self.binaries.remove_particles(merging_blackholes)
