@@ -51,23 +51,25 @@ class BinaryBlackHolesWithAGN(object):
         self.blackhole_mass = blackhole_masses
         self.minimum_distance = 0 | units.m
         self.number_of_gas_particles = number_of_gas_particles
-        self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
-        self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
-        self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
-                                  number_of_particles=self.number_of_gas_particles,
-                                  disk_min=1.,
-                                  disk_max=self.outer_boundary/self.inner_boundary,
-                                  number_of_workers=number_of_hydro_workers,
-                                  gadget_converter=self.gadget_converter,
-                                  disk_converter=self.disk_converter,
-                                  powerlaw=disk_powerlaw,
-                                  end_time=self.end_time)
+        if self.number_of_gas_particles > 0:
+            self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
+            self.gadget_converter = nbody_system.nbody_to_si(disk_mass_fraction*self.smbh.super_massive_black_hole.mass, self.outer_boundary)
+            self.disk = AccretionDisk(fraction_of_central_blackhole_mass=disk_mass_fraction,
+                                      number_of_particles=self.number_of_gas_particles,
+                                      disk_min=1.,
+                                      disk_max=self.outer_boundary/self.inner_boundary,
+                                      number_of_workers=number_of_hydro_workers,
+                                      gadget_converter=self.gadget_converter,
+                                      disk_converter=self.disk_converter,
+                                      powerlaw=disk_powerlaw,
+                                      end_time=self.end_time)
+            self.hydro_code = self.disk.hydro_code
+
 
         self.binaries = Particles()
         self.merged_blackholes = Particles()
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
-        self.hydro_code = self.disk.hydro_code
         # Generate the binary locations and masses
         self.all_grav_particles = Particles()
         self.generate_binaries()
@@ -107,7 +109,8 @@ class BinaryBlackHolesWithAGN(object):
             print('Time: {}'.format(sim_time.value_in(units.yr)))
 
             self.channel_from_grav_to_binaries.copy()
-            self.disk.hydro_channel_to_particles.copy()
+            if self.number_of_gas_particles > 0:
+                self.disk.hydro_channel_to_particles.copy()
 
             for blackhole_one, blackhole_two in grouped(self.binaries, 2):
                 merging_blackholes = Particles()
@@ -121,7 +124,8 @@ class BinaryBlackHolesWithAGN(object):
                     self.merge_blackholes(merging_blackholes)
 
         self.grav_code.stop()
-        self.disk.hydro_code.stop()
+        if self.number_of_gas_particles > 0:
+            self.disk.hydro_code.stop()
 
 
     def generate_binaries(self):
@@ -156,7 +160,8 @@ class BinaryBlackHolesWithAGN(object):
         self.bridge = Bridge(use_threading=True, verbose=True)
         self.bridge.timestep = timestep
         self.bridge.add_system(self.grav_code, (self.smbh_potential,))
-        self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
+        if self.number_of_gas_particles > 0:
+            self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
 
         return self.bridge
 
