@@ -78,23 +78,23 @@ def main(number_of_binaries = 1, steps_of_inclination = 19, random_binaries_gene
 
 smbh, binaries, all_gravity_particles = main()
 converter = nbody_system.nbody_to_si(all_gravity_particles.mass.sum(), all_gravity_particles.virial_radius())
-gravity = Huayno(converter, number_of_workers=2)
-gravity.particles.add_particles(all_gravity_particles)
-channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_gravity_particles)
-channel_from_binaries_to_grav = all_gravity_particles.new_channel_to(gravity.particles)
+#gravity = Huayno(converter, number_of_workers=2)
+#gravity.particles.add_particles(all_gravity_particles)
+#channel_from_grav_to_binaries = gravity.particles.new_channel_to(all_gravity_particles)
+#channel_from_binaries_to_grav = all_gravity_particles.new_channel_to(gravity.particles)
 
 # ----------------------- must become parameter -----------------------#
-end_time = 1000 | units.Myr
-timestep = 1 | end_time.unit
+#end_time = 1000 | units.Myr
+#timestep = 1 | end_time.unit
 # ---------------------------------------------------------------------#
 
-sim_time = 0 | end_time.unit
-while sim_time < end_time:
-    sim_time += timestep
-    gravity.evolve_model(sim_time)
-    print (sim_time)
-    channel_from_grav_to_binaries.copy()
-    write_set_to_file(gravity.particles, "main_gravity.h5", "hdf5")
+#sim_time = 0 | end_time.unit
+#while sim_time < end_time:
+#    sim_time += timestep
+#    gravity.evolve_model(sim_time)
+#    print (sim_time)
+#    channel_from_grav_to_binaries.copy()
+#    write_set_to_file(gravity.particles, "main_gravity.h5", "hdf5")
 
 # print(gravity.particles)
 
@@ -102,7 +102,7 @@ print('\nbinaries hill radius: ', binaries.hill_radius.in_(units.AU), \
       '\nbinaries inner semi major axis: ', binaries.inner_semi_major_axis.in_(units.AU), \
       '\nbinaries max orbital period: ', binaries.binary_max_orbital_period.in_(units.yr), \
       '\nbinaries min orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
-      '\nbinaries orbital period: ', binaries.binary_min_orbital_period.in_(units.yr), \
+      '\nbinaries orbital period: ', binaries.orbital_period.in_(units.yr), \
       '\ntotal binary mass: ', binaries.total_mass.in_(units.MSun), \
       '\nsmbh mass: ', binaries.central_blackhole.mass.in_(units.MSun), \
       '\nsmbh radius: ', smbh.radius.in_(units.AU), \

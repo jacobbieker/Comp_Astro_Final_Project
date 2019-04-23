@@ -2,7 +2,6 @@ from __future__ import print_function
 from AccretionDisk import AccretionDisk
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from BinaryBlackHole import BinaryBlackHole
-from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.couple.bridge import Bridge
 from amuse.community.huayno.interface import Huayno
 import numpy as np
@@ -35,7 +34,6 @@ class BinaryBlackHolesWithAGN(object):
                                   disk_converter=self.disk_converter,
                                   powerlaw=disk_powerlaw,
                                   end_time=self.end_time)
-        write_set_to_file(self.disk.gas_particles, "Initial_AccretionDisk_SMBH_Mass_{}_MSun.hdf5".format(self.smbh.super_massive_black_hole.mass.value_in(units.MSun)), "hdf5")
 
         self.binaries = Particles()
         self.binaries_affect_disk = binaries_affect_disk
@@ -43,19 +41,25 @@ class BinaryBlackHolesWithAGN(object):
         self.hydro_code = self.disk.hydro_code
         # Generate the binary locations and masses
         self.all_grav_particles = Particles()
-        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
         self.generate_binaries()
         self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(), self.all_grav_particles.virial_radius())
 
         # Now add them to a combined gravity code
         self.grav_code = Huayno(self.gravity_converter, number_of_workers=number_of_grav_workers)
         self.grav_code.timestep = 100 | units.yr
+
+        self.super_grav_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.smbh.super_massive_black_hole.virial_radius())
+        self.supermassive_grav = Huayno(self.super_grav_converter)
+        self.supermassive_grav.particles.add_particles(self.smbh.super_massive_black_hole)
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
 
         # Channels to update the particles here
         self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.all_grav_particles)
         self.channel_from_binaries_to_grav = self.all_grav_particles.new_channel_to(self.grav_code.particles)
+
+        # Channels from grav to supermassive
+        self.channel_from_supergrav_to_particle = self.supermassive_grav.particles.new_channel_to(self.smbh.super_massive_black_hole)
 
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
@@ -67,23 +71,27 @@ class BinaryBlackHolesWithAGN(object):
 
         # New particle superset of all particles in the sim
         # Initial Conditions
-        all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
-        write_set_to_file(all_sim_particles, "{}_Binaries_{}_Gas_AGN_sim_Initial.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
 
         while sim_time < end_time:
+            # New particle superset of all particles in the sim
+            # Now extract information such as inclination to each other and the disk
+
+            all_sim_particles = self.bridge.particles
+            all_gas_particles = self.bridge.gas_particles
+            write_set_to_file(all_sim_particles, "Particles_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+            write_set_to_file(all_gas_particles, "Gas_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
             print('Time: {}'.format(sim_time.value_in(units.yr)))
 
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
-
-            # New particle superset of all particles in the sim
-            all_sim_particles = ParticlesSuperset([self.grav_code.particles, self.disk.hydro_code.gas_particles])
-            write_set_to_file(all_sim_particles, "{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+            #self.channel_from_supergrav_to_particle.copy()
 
         self.grav_code.stop()
         self.disk.hydro_code.stop()
+        self.supermassive_grav.stop()
 
 
     def generate_binaries(self):
@@ -113,7 +121,8 @@ class BinaryBlackHolesWithAGN(object):
 
         self.bridge = Bridge(use_threading=True, verbose=True)
         self.bridge.timestep = timestep
-        self.bridge.add_system(self.grav_code, (self.hydro_code,))
+        self.bridge.add_system(self.supermassive_grav, (self.hydro_code, self.grav_code,))
         self.bridge.add_system(self.hydro_code, (self.grav_code, ))
+        # self.bridge.add_system(self.grav_code, (self.hydro_code,))
 
         return self.bridge
