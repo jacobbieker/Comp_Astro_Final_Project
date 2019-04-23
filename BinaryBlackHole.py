@@ -31,11 +31,6 @@ class BinaryBlackHole(object):
 
         Make a protoplanetary disk -> AGN disk is the same, just larger
 
-
-
-
-
-
         """
         self.central_blackhole = Particle(1)
         self.central_blackhole.mass = central_blackhole_mass

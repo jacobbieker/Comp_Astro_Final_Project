@@ -12,21 +12,6 @@ class AccretionDisk(object):
     This class encapsulates the Hydrodynamics code, built around Gadget2, and enables some convience functions, such
     as getting the information needed for plotting, etc.
 
-    Could also be extended with Radiative Transport if needd
-
-    E_dot, I_dot, A_dot
-
-    Start with different hill radii
-
-    Make 30 solar mass, half hill radius apart, 0.6 eccentricity, set apocenter as half hill radius
-
-    Set in different orbits around the black hole
-
-    Prevent randomness
-
-    Use smallN for all of the
-
-
     """
 
     def __init__(self, number_of_particles=100000, gadget_converter=None, disk_converter=None,
