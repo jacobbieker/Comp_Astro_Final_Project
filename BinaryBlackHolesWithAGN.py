@@ -93,10 +93,9 @@ class BinaryBlackHolesWithAGN(object):
 
             # New particle superset of all particles in the simulation
             all_sim_particles = self.bridge.particles
-            all_gas_particles = self.bridge.gas_particles
+            print(len(all_sim_particles))
             # Now extract information
-            write_set_to_file(all_sim_particles, "Particles_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
-            write_set_to_file(all_gas_particles, "Gas_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+            write_set_to_file(all_sim_particles, "Particles_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "hdf5")
             # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)

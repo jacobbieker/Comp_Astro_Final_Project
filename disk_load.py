@@ -37,26 +37,10 @@ def make_map(hydro, grid_points=100, L=1):
     return rho
 
 
-gas, converter = gas_sphere(10000, 5e6 | units.MSun, 19.756 | units.AU)
 
-grid = read_set_from_file("/home/jacob/Development/Comp_Astro_Final_Project/Unitless_Disk_medium.h5", "hdf5")
+grid = read_set_from_file("/home/jacob/Development/Comp_Astro_Final_Project/Gas_10_Binaries_1000000_Gas_AGN_sim.hdf5", "hdf5")
 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import pyplot as plt
+print(len(grid))
 
-summed_density = np.sum(grid.rho.value_in(grid.rho.unit), axis=0)
-
-plt.imshow(summed_density)
-plt.show()
-
-
-fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(111, projection='3d')
-print(grid.x[:,0,0])
-graph = ax.scatter(grid.x.value_in(grid.x.unit), grid.y.value_in(grid.y.unit), grid.rho.value_in(grid.rho.unit))
-plt.show()
-
-
-hydro = Gadget2(unit_converter=converter, mode='periodic')
-
-hydro.gas_particles.add_particles(grid)
+for history in grid.history:
+    print(len(grid))
