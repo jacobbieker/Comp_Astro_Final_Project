@@ -9,12 +9,35 @@ from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
 
 
+class SuperMassiveBlackHolePotential(object):
+    def __init__(self,R, M):
+        self.radius=R
+        self.mass=M
+
+    def get_gravity_at_point(self,eps,x,y,z):
+        r2=x**2+y**2+z**2
+        r=r2**0.5
+        m=self.mass*(r/self.radius)**eps
+        fr=constants.G*m/r2
+        ax=-fr*x/r
+        ay=-fr*y/r
+        az=-fr*z/r
+        return ax,ay,az
+
+    def get_potential_at_point(self,eps,x,y,z):
+        r=(x**2+y**2+z**2)**0.5
+        c=constants.G*self.mass/self.radius**eps
+        phi=c/(eps-1)*(r**(eps-1)-self.radius**(eps-1))
+        return phi
+
+
 class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
                  radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
+        self.smbh_potential = SuperMassiveBlackHolePotential(self.smbh.super_massive_black_hole.mass, self.smbh.radius)
         self.inner_boundary = self.smbh.radius * 100
         self.outer_boundary = self.smbh.radius * 100000
         self.steps_of_inclination = steps_of_inclination
@@ -48,18 +71,12 @@ class BinaryBlackHolesWithAGN(object):
         self.grav_code = Huayno(self.gravity_converter, number_of_workers=number_of_grav_workers)
         self.grav_code.timestep = 100 | units.yr
 
-        self.super_grav_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.smbh.super_massive_black_hole.virial_radius())
-        self.supermassive_grav = Huayno(self.super_grav_converter)
-        self.supermassive_grav.particles.add_particles(self.smbh.super_massive_black_hole)
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
 
         # Channels to update the particles here
         self.channel_from_grav_to_binaries = self.grav_code.particles.new_channel_to(self.all_grav_particles)
         self.channel_from_binaries_to_grav = self.all_grav_particles.new_channel_to(self.grav_code.particles)
-
-        # Channels from grav to supermassive
-        self.channel_from_supergrav_to_particle = self.supermassive_grav.particles.new_channel_to(self.smbh.super_massive_black_hole)
 
         self.timestep = timestep
         self.bridge = self.create_bridges(timestep)
@@ -87,11 +104,9 @@ class BinaryBlackHolesWithAGN(object):
 
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
-            #self.channel_from_supergrav_to_particle.copy()
 
         self.grav_code.stop()
         self.disk.hydro_code.stop()
-        self.supermassive_grav.stop()
 
 
     def generate_binaries(self):
@@ -121,7 +136,7 @@ class BinaryBlackHolesWithAGN(object):
 
         self.bridge = Bridge(use_threading=True, verbose=True)
         self.bridge.timestep = timestep
-        self.bridge.add_system(self.supermassive_grav, (self.hydro_code, self.grav_code,))
+        self.bridge.add_system(self.smbh_potential, (self.hydro_code, self.grav_code,))
         self.bridge.add_system(self.hydro_code, (self.grav_code, ))
         # self.bridge.add_system(self.grav_code, (self.hydro_code,))
 
