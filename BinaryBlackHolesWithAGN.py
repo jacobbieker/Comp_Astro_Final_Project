@@ -111,7 +111,8 @@ class BinaryBlackHolesWithAGN(object):
 
             for blackhole_one, blackhole_two in grouped(self.binaries, 2):
                 merging_blackholes = Particles()
-                merging_blackholes.add_particles([blackhole_one, blackhole_two])
+                merging_blackholes.add_particle(blackhole_one)
+                merging_blackholes.add_particle(blackhole_two)
                 blackholes_distance = (merging_blackholes[0].position - merging_blackholes[1].position).length()
                 merge_condition = self.set_merge_conditions(blackholes_distance, self.minimum_distance)
 
