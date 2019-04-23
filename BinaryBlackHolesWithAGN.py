@@ -1,14 +1,13 @@
+from __future__ import print_function
 from AccretionDisk import AccretionDisk
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from BinaryBlackHole import BinaryBlackHole
 from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.couple.bridge import Bridge
 from amuse.community.huayno.interface import Huayno
-from Gadget2_Gravity import Gadget2_Gravity
 import numpy as np
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
-from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 
 class BinaryBlackHolesWithAGN(object):
@@ -50,6 +49,7 @@ class BinaryBlackHolesWithAGN(object):
 
         # Now add them to a combined gravity code
         self.grav_code = Huayno(self.gravity_converter, number_of_workers=number_of_grav_workers)
+        self.grav_code.timestep = 100 | units.yr
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
 
@@ -73,7 +73,7 @@ class BinaryBlackHolesWithAGN(object):
         while sim_time < end_time:
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
-            print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
+            print('Time: {}'.format(sim_time.value_in(units.yr)))
 
             self.channel_from_grav_to_binaries.copy()
             self.disk.hydro_channel_to_particles.copy()
@@ -88,17 +88,18 @@ class BinaryBlackHolesWithAGN(object):
 
     def generate_binaries(self):
         blackhole_masses = [30,30]
-        initial_outer_semi_major_axis = np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
-        initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
-        binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
-                                   initial_outer_semi_major_axis= initial_outer_semi_major_axis | (self.outer_boundary.unit),
-                                   initial_outer_eccentricity=0.6,
-                                   inner_eccentricity=0.6,
-                                   inclination=initial_outer_eccentricity,
-                                   )
+        for _ in range(self.number_of_binaries):
+            initial_outer_semi_major_axis = np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
+            initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
+            binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
+                                       initial_outer_semi_major_axis= initial_outer_semi_major_axis | (self.outer_boundary.unit),
+                                       initial_outer_eccentricity=0.6,
+                                       inner_eccentricity=0.6,
+                                       inclination=initial_outer_eccentricity,
+                                       )
 
-        self.all_grav_particles.add_particles(binaries.blackholes)
-        self.binaries.add_particles(binaries.blackholes)
+            self.all_grav_particles.add_particles(binaries.blackholes)
+            self.binaries.add_particles(binaries.blackholes)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
         """
@@ -110,7 +111,7 @@ class BinaryBlackHolesWithAGN(object):
         :return:
         """
 
-        self.bridge = Bridge(use_threading=True)
+        self.bridge = Bridge(use_threading=True, verbose=True)
         self.bridge.timestep = timestep
         self.bridge.add_system(self.grav_code, (self.hydro_code,))
         self.bridge.add_system(self.hydro_code, (self.grav_code, ))
