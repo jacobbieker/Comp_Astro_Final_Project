@@ -43,12 +43,13 @@ class BinaryBlackHole(object):
         self.initial_outer_semi_major_axis = initial_outer_semi_major_axis
         self.initial_outer_eccentricity = initial_outer_eccentricity
 
+        # Calculating the hill radius to act as a maximum boundary for the initial inner semi major axis and therefore the inner orbital period
         self.hill_radius = self.get_hill_radius(self.initial_outer_semi_major_axis, self.initial_outer_eccentricity,
                                                 self.total_mass, self.central_blackhole.mass)
         self.binary_max_orbital_period = self.get_orbital_period(0.5 * self.hill_radius, self.total_mass)
         self.binary_min_orbital_period = self.get_orbital_period(
             1000 * self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
-        # self.orbital_period = 10 | units.yr
+        # Restricting the initial inner orbital period
         self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr),
                                                 self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
 
@@ -58,6 +59,7 @@ class BinaryBlackHole(object):
 
         self.timestep = self.orbital_period * orbital_fraction_timestep
 
+        # Create the binary blackholes and set them in orbit around each other
         binary_position, binary_velocity = get_position(self.blackholes[0].mass, self.blackholes[1].mass,
                                                         self.inner_eccentricity, self.inner_semi_major_axis,
                                                         180, self.inclination, 180, 0, self.timestep)
@@ -66,18 +68,15 @@ class BinaryBlackHole(object):
 
         self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
         self.minimum_distance = 100 * self.get_schwarzschild_radius(self.blackholes[0].mass)
-        self.merged_blackhole = Particle()
+        # self.merged_blackhole = Particle()
 
         self.blackholes.move_to_center()
-
+        # Set the (inner binary) center of mass and center of mass velocity in orbit around the supermassive black hole
         self.initial_outer_semi_major_axis, self.initial_outer_eccentricity = self.set_in_orbit_around_central_blackhole(
             central_blackhole_mass,
             self.initial_outer_semi_major_axis,
             self.initial_outer_eccentricity,
-            time_to_advance=np.random.uniform(0.001, self.orbital_period.value_in(units.yr), size=1) | units.yr)
-
-    def particles(self):
-        return self.blackholes
+            time_to_advance=np.random.uniform(min(0.001, self.orbital_period.value_in(units.day)) , self.orbital_period.value_in(units.day), size=1) | units.day)
 
     def get_orbital_period(self, orbital_separation, total_mass):
         return 2 * np.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()
@@ -91,9 +90,9 @@ class BinaryBlackHole(object):
     def get_schwarzschild_radius(self, mass):
         return (2 * constants.G * mass) / (constants.c ** 2)
 
-    def set_center_of_mass(self, new_center_of_mass):
+    def set_center_of_mass_position(self, new_center_of_mass):
         """
-        Sets the center of mass of the binary system
+        Sets the center of mass position of the binary system
         :param new_center_of_mass: center of mass needed
         :return:
         """
@@ -127,7 +126,7 @@ class BinaryBlackHole(object):
             self.blackholes[1].velocity -= new_center_of_mass
 
     def set_binary_location_and_velocity(self, center_of_mass, center_of_mass_velocity):
-        self.set_center_of_mass(center_of_mass)
+        self.set_center_of_mass_position(center_of_mass)
         self.set_center_of_mass_velocity(center_of_mass_velocity)
 
     def set_in_orbit_around_central_blackhole(self, central_blackhole_mass, semi_major_axis,
@@ -135,7 +134,7 @@ class BinaryBlackHole(object):
                                               argument_of_perhilion=0, longitude_of_ascending_node=0,
                                               time_to_advance=5 | units.day):
         """
-        Sets the binary's orbit around the supermassive central blackhole
+        Sets the binary's center of mass in orbit around the supermassive central blackhole
         :param central_blackhole:
         :param eccentricity:
         :param semi_major_axis:
@@ -156,47 +155,33 @@ class BinaryBlackHole(object):
                                                                         argument=argument_of_perhilion,
                                                                         longitude=longitude_of_ascending_node,
                                                                         delta_t=time_to_advance)
-
+        # Get the center of mass posiotion and velocity                                                                
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
-        merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
-        if merge_condition:
-            print('binaries merged')
-            self.merge_blackholes()
+        # merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
+        # if merge_condition:
+        #     print('binaries merged')
+        #     self.merge_blackholes()
 
         return semi_major_axis, eccentricity
 
-    def set_merge_conditions(self, blackholes_distance, minimum_distance):
-        merge_condition = blackholes_distance < minimum_distance
-        return merge_condition
+    # def set_merge_conditions(self, blackholes_distance, minimum_distance):
+    #     merge_condition = blackholes_distance < minimum_distance
+    #     return merge_condition
 
-    def merge_blackholes(self, fraction_of_total_mass=0.95):
-        """
-        Merges the binary particles into a single particle, with the
-        :return:
-        """
-        # 1) Get set_binary_location_and_velocity value
-        # 2) Add the merged particle to merged_blackholes
-        # 3) Remove the binary blackholes from blackholes set
-        # 4) Bridge the new particle set to SMBH gravity
-        merged_blackhole_location = self.blackholes.center_of_mass()
-        merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
-        # Set the initial position and velocity of the merged_blackholes to be the same as was the
-        # last values from --- set_binary_location_and_velocity ---
-        self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
-        self.merged_blackhole[0].radius = self.get_schwarzschild_radius(self.merged_blackhole[0].mass) | units.km
-        # Could as well be zero cause we dont care anymore about it
-        # I only left it in because we want to avoid the new particle
-        # colliding with other particles
-        self.merged_blackhole[0].position = merged_blackhole_location
-        self.merged_blackhole[0].velocity = merged_blackhole_velocity
-
-        self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
-        self.blackholes.add_particle(self.merged_blackhole[0])
-
-        # Need to add these particles to gravity instead of the binaries
-        raise NotImplementedError
-
-    # def merge_particles(self, merge_condition):
-    #     if merge_condition:
-    #         self.merged_blackhole_attributes()
+    # def merge_blackholes(self, fraction_of_total_mass=0.95):
+    #     """
+    #     Merges the binary particles into a single particle after merging
+    #     :param fraction_of_total_mass: sets the mass of the merged blackhole
+    #     :return:
+    #     """
+    #
+    #     merged_blackhole_location = self.blackholes.center_of_mass()
+    #     merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
+    #     # Set the initial position and velocity of the merged_blackholes to be the same as the center of mass position and velocity
+    #     self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
+    #     self.merged_blackhole[0].position = merged_blackhole_location
+    #     self.merged_blackhole[0].velocity = merged_blackhole_velocity
+    #
+    #     self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
+    #     self.blackholes.add_particle(self.merged_blackhole[0])
