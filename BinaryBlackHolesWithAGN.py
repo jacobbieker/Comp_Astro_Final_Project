@@ -41,7 +41,7 @@ class BinaryBlackHolesWithAGN(object):
 
     def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
                  blackhole_masses = 30 | units.MSun, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
-                 disk_powerlaw=1):
+                 disk_powerlaw=1, filename="BinaryBlackHoleWithAGN"):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
         self.smbh_potential = SuperMassiveBlackHolePotential(M=self.smbh.super_massive_black_hole.mass, R=self.smbh.radius)
         self.inner_boundary = self.smbh.radius * 100
@@ -50,6 +50,7 @@ class BinaryBlackHolesWithAGN(object):
         self.end_time = end_time
         self.blackhole_mass = blackhole_masses
         self.minimum_distance = 0 | units.m
+        self.filename = filename
         self.number_of_gas_particles = number_of_gas_particles
         if self.number_of_gas_particles > 0:
             self.disk_converter = nbody_system.nbody_to_si(self.smbh.super_massive_black_hole.mass, self.inner_boundary)
@@ -102,7 +103,7 @@ class BinaryBlackHolesWithAGN(object):
             all_sim_particles = self.bridge.particles
             print(len(all_sim_particles))
             # Now extract information
-            write_set_to_file(all_sim_particles, "Particles_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "hdf5")
+            write_set_to_file(all_sim_particles, self.filename+"_Particles_{}_Binaries_{}_Gas_AGN.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "hdf5")
             # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
