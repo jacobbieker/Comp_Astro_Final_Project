@@ -3,6 +3,9 @@ from amuse.couple.bridge import CalculateFieldForParticles
 
 
 class Gadget2_Gravity(Gadget2):
+    """
+    Extension of Gadget2 with gravity included
+    """
     def __init__(self, unit_converter=None, mode='normal', **options):
         Gadget2.__init__(self, unit_converter=unit_converter, mode=mode, **options)
 

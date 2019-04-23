@@ -13,11 +13,12 @@ class SuperMassiveBlackHolePotential(object):
     def __init__(self,R, M):
         self.radius=R
         self.mass=M
+        self.alpha = 1.0
 
     def get_gravity_at_point(self,eps,x,y,z):
         r2=x**2+y**2+z**2
-        r=r2**0.5
-        m=self.mass*(r/self.radius)**eps
+        r=r2.sqrt()
+        m=self.mass*(r/self.radius)**self.alpha
         fr=constants.G*m/r2
         ax=-fr*x/r
         ay=-fr*y/r
@@ -26,8 +27,8 @@ class SuperMassiveBlackHolePotential(object):
 
     def get_potential_at_point(self,eps,x,y,z):
         r=(x**2+y**2+z**2)**0.5
-        c=constants.G*self.mass/self.radius**eps
-        phi=c/(eps-1)*(r**(eps-1)-self.radius**(eps-1))
+        c=constants.G*self.mass/self.radius**self.alpha
+        phi=c/(self.alpha-1)*(r**(self.alpha-1)-self.radius**(self.alpha-1))
         return phi
 
 
@@ -37,7 +38,7 @@ class BinaryBlackHolesWithAGN(object):
                  radiative_transfer=False, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
                  disk_powerlaw=1):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
-        self.smbh_potential = SuperMassiveBlackHolePotential(self.smbh.super_massive_black_hole.mass, self.smbh.radius)
+        self.smbh_potential = SuperMassiveBlackHolePotential(M=self.smbh.super_massive_black_hole.mass, R=self.smbh.radius)
         self.inner_boundary = self.smbh.radius * 100
         self.outer_boundary = self.smbh.radius * 100000
         self.steps_of_inclination = steps_of_inclination
