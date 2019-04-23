@@ -136,8 +136,8 @@ class BinaryBlackHolesWithAGN(object):
 
         self.bridge = Bridge(use_threading=True, verbose=True)
         self.bridge.timestep = timestep
-        self.bridge.add_system(self.smbh_potential, (self.hydro_code, self.grav_code,))
-        self.bridge.add_system(self.hydro_code, (self.grav_code, ))
+        self.bridge.add_system(self.grav_code, (self.smbh_potential,))
+        self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
         # self.bridge.add_system(self.grav_code, (self.hydro_code,))
 
         return self.bridge

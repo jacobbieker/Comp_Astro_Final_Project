@@ -79,7 +79,7 @@ class BinaryBlackHole(object):
             central_blackhole_mass,
             self.initial_outer_semi_major_axis,
             self.initial_outer_eccentricity,
-            time_to_advance=np.random.uniform(0.001, 100, size=1) | units.yr)
+            time_to_advance=np.random.uniform(0.001, self.orbital_period.value_in(units.yr), size=1) | units.yr)
 
     def particles(self):
         return self.blackholes
