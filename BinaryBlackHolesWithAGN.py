@@ -86,18 +86,17 @@ class BinaryBlackHolesWithAGN(object):
 
         sim_time = 0. | self.end_time.unit
 
-        # New particle superset of all particles in the sim
-        # Initial Conditions
 
         while sim_time < end_time:
-            # New particle superset of all particles in the sim
             # Now extract information such as inclination to each other and the disk
 
+            # New particle superset of all particles in the simulation
             all_sim_particles = self.bridge.particles
             all_gas_particles = self.bridge.gas_particles
+            # Now extract information
             write_set_to_file(all_sim_particles, "Particles_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
             write_set_to_file(all_gas_particles, "Gas_{}_Binaries_{}_Gas_AGN_sim.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
-
+            # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
             print('Time: {}'.format(sim_time.value_in(units.yr)))
@@ -110,8 +109,12 @@ class BinaryBlackHolesWithAGN(object):
 
 
     def generate_binaries(self):
+        """
+        Generate a number of blackhole binaries with random initial outer semi major axis and inclination within the boundaries
+        """
         blackhole_masses = [30,30]
         for _ in range(self.number_of_binaries):
+            # Make sure to generate the binaries randomly but within the disk radius and not too close the SMBH
             initial_outer_semi_major_axis = np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
             initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
             binaries = BinaryBlackHole(blackhole_masses[0], blackhole_masses[1], self.smbh.super_massive_black_hole.mass,
@@ -121,16 +124,15 @@ class BinaryBlackHolesWithAGN(object):
                                        inclination=initial_outer_eccentricity,
                                        )
 
+            # Add the particles in the gravity particles
             self.all_grav_particles.add_particles(binaries.blackholes)
             self.binaries.add_particles(binaries.blackholes)
 
     def create_bridges(self, timestep=0.1 | units.Myr):
         """
-        Bridge between SMBH and disk one way
-        Bridge between disk and Binaries, one way
-        SMBH and Binaries are in the same gravity, no bridge
-        Possibly bridge from binaries to the gas
-
+        Bridge between SMBH potential and disk one way (smbh affects disk)
+        Bridge between SMBH potential and binaries one way (smbh affects binaries)
+        Bridge between disk and binaries one way (disk affects binaries)
         :return:
         """
 

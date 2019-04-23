@@ -155,7 +155,7 @@ class BinaryBlackHole(object):
                                                                         argument=argument_of_perhilion,
                                                                         longitude=longitude_of_ascending_node,
                                                                         delta_t=time_to_advance)
-
+        # Get the center of mass posiotion and velocity                                                                
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
         # merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
