@@ -60,6 +60,8 @@ class BinaryBlackHolesWithAGN(object):
                                   end_time=self.end_time)
 
         self.binaries = Particles()
+        self.merged_blackholes = Particles()
+        self.minimum_distance = 100 * self.get_schwarzschild_radius(30 | units.MSun)
         self.binaries_affect_disk = binaries_affect_disk
         self.number_of_binaries = number_of_binaries
         self.hydro_code = self.disk.hydro_code
@@ -143,3 +145,41 @@ class BinaryBlackHolesWithAGN(object):
         # self.bridge.add_system(self.grav_code, (self.hydro_code,))
 
         return self.bridge
+
+
+
+
+
+
+
+
+
+    self.blackholes_distance = (self.blackholes[0].position - self.blackholes[1].position).length()
+    merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
+
+    if merge_condition:
+        print('binaries merged')
+        self.merge_blackholes()
+
+
+    def set_merge_conditions(self, blackholes_distance, minimum_distance):
+        merge_condition = blackholes_distance < minimum_distance
+        return merge_condition
+
+    def merge_blackholes(self, merging_blackholes, fraction_of_total_mass=0.95):
+        """
+        Merges the binary particles into a single particle after merging
+        :param fraction_of_total_mass: sets the mass of the merged blackhole
+        :return:
+        """
+
+        merged_blackhole_location = merging_blackholes.center_of_mass_position()
+        merged_blackhole_velocity = merging_blackholes.center_of_mass_velocity()
+        # Set the initial position and velocity of the merged_blackholes to be the same as the center of mass position and velocity
+        merged_blackhole = Particle()
+        merged_blackhole.mass = fraction_of_total_mass * self.total_mass
+        merged_blackhole.position = merged_blackhole_location
+        merged_blackhole.velocity = merged_blackhole_velocity
+
+        self.grav_code.particles.remove_particles(self.blackholes[0], self.blackholes[1])
+        self.grav_code.particles.add_particle(merged_blackhole)
