@@ -18,7 +18,7 @@ def new_option_parser():
     result.add_option("--gravity_timestep", unit=units.yr, dest="gravity_timestep", type="float",
                       default=100 | units.yr,
                       help="Timestep for the gravity code [%default]")
-    result.add_option("--bridge_timestep", unit=units.yr, dest="bridge_timestep", type="float", default=0.1 | units.Myr,
+    result.add_option("--bridge_timestep", unit=units.Myr, dest="bridge_timestep", type="float", default=0.1 | units.Myr,
                       help="Timestep for the Bridge [%default]")
     result.add_option("--smbh_as_potential", dest="smbh_as_potential", type="int", default=0,
                       help="Whether to simulate the SMBH as a potential vs a particle, 0 is false, 1 is true [%default]")
@@ -65,5 +65,5 @@ def main(mass_of_central_black_hole,
 
 if __name__ == "__main__":
     o, arguments = new_option_parser().parse_args()
-    print(o)
+    print(o, flush=True)
     main(**o.__dict__)

@@ -79,7 +79,8 @@ class BinaryBlackHolesWithAGN(object):
         # Generate the binary locations and masses
         self.all_grav_particles = Particles()
         self.generate_binaries()
-        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
+        if not self.smbh_as_potential:
+            self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
         self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(),
                                                           self.all_grav_particles.virial_radius())
 
