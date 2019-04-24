@@ -20,10 +20,10 @@ def new_option_parser():
                       help="Timestep for the gravity code [%default]")
     result.add_option("--bridge_timestep", unit=units.Myr, dest="bridge_timestep", type="float", default=0.1 | units.Myr,
                       help="Timestep for the Bridge [%default]")
-    result.add_option("--smbh_as_potential", dest="smbh_as_potential", type="int", default=0,
+    result.add_option("--smbh_as_potential", dest="smbh_as_potential",action="store_true", default=False,
                       help="Whether to simulate the SMBH as a potential vs a particle, 0 is false, 1 is true [%default]")
-    result.add_option("--binaries_affect_disk", dest="binaries_affect_disk", type="int", default=0,
-                      help="Whether the binaries affect the accretion disk, 0 is false, 1 true[%default]")
+    result.add_option("--binaries_affect_disk", dest="binaries_affect_disk", action="store_true", default=False,
+                      help="Whether the binaries affect the accretion disk [%default]")
     result.add_option("--disk_mass_fraction", dest="disk_mass_fraction", type="float", default=0.1,
                       help="Disk mass fraction [%default]")
     result.add_option("--number_of_hydro_workers", dest="number_of_hydro_workers", type="int", default=6,
@@ -32,6 +32,7 @@ def new_option_parser():
                       help="Number of workers for gravity code [%default]")
     result.add_option("--filename", dest="filename", type="string", default="BinaryBlackHoles",
                       help="Filename [%default]")
+
     return result
 
 
