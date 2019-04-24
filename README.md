@@ -59,3 +59,7 @@ __The main parameters are:__
   
 **filename**,	_default=BinaryBlackHoles_
 
+__Dynamical_Hardening_of_Black_Hole_Binaries_in_Active_Galactic_Nuclei.pdf__, Report describing the simulation.
+
+The simulation was ran for the initial conditions described in the report. Full particle history of the outcome can be found in .hdf5 files located in the STRW directory:
+__/disks/strw14/bieker/Comp_Astro_Final_Project__
