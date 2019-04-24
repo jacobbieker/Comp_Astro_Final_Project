@@ -28,7 +28,7 @@ __main.py__ : Wraps up everything to be ran for the simulation
 __plotting.py__ : Uses everything saved in the simulation for plotting and animation
 
 ## To run the simulation
-The simulation is ran through AMUSE by running the main.py file. The simulation parameters can be seen and tuned through the Option Parser implemented.
+The simulation is ran through AMUSE by running the __main.py__ file. The simulation parameters can be seen and tuned through the Option Parser implemented.
 
 __The main parameters are:__ 
   --mass_of_central_black_hole default=1000000.0 MSun
