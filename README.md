@@ -61,7 +61,7 @@ __The main parameters are:__
 
 
 
-__Final_report.pdff__ contains the _report_ describing the simulation.
+__Final_report.pdf__ contains the _report_ describing the simulation.
 
 The simulation was ran for the initial conditions described in the report. Full particle history of the outcome can be found in .hdf5 files located in the STRW directory:
 __/disks/strw14/bieker/Comp_Astro_Final_Project__
