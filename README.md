@@ -32,29 +32,30 @@ __plotting.py__ : Uses everything saved in the simulation for plotting and anima
 The simulation is ran through AMUSE by running the __main.py__ file. The simulation parameters can be seen and tuned through the Option Parser implemented.
 
 __The main parameters are:__ 
-  --mass_of_central_black_hole default=1000000.0 MSun
+
+  mass_of_central_black_hole,	_default=1000000.0 MSun_
   
-  number_of_binaries,	default=50
+  number_of_binaries,	_default=50_
   
-  number_of_gas_particles,	default=100000
+  number_of_gas_particles,	_default=100000_
   
-  end_time,	default=10 Myr
+  end_time,	_default=10 Myr_
   
-  blackhole_mass,	default=30 MSun
+  blackhole_mass,	_default=30 MSun_
   
-  gravity_timestep,	default=100 yr
+  gravity_timestep,	_default=100 yr_
   
-  bridge_timestep,	default=0.1 Myr
+  bridge_timestep,	_default=0.1 Myr_
   
-  smbh_as_potential,	default=False
+  smbh_as_potential,	_default=False_
   
-  binaries_affect_disk,	default=False
+  binaries_affect_disk,	_default=False_
   
-  disk_mass_fraction,	default=0.1
+  disk_mass_fraction,	_default=0.1_
   
-  number_of_hydro_workers,	default=6
+  number_of_hydro_workers,	_default=6_
   
-  number_of_grav_workers,	default=12
+  number_of_grav_workers,	_default=12_
   
-  filename,	default=BinaryBlackHoles
+  filename,	_default=BinaryBlackHoles_
 
