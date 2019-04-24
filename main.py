@@ -65,5 +65,5 @@ def main(mass_of_central_black_hole,
 
 if __name__ == "__main__":
     o, arguments = new_option_parser().parse_args()
-    print(o, flush=True)
+    print(o)
     main(**o.__dict__)

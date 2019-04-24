@@ -7,10 +7,11 @@ from amuse.community.huayno.interface import Huayno
 import numpy
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
+from itertools import izip
 
 
 def grouped(iterable, n):
-    return zip(*[iter(iterable)] * n)
+    return izip(*[iter(iterable)] * n)
 
 
 class SuperMassiveBlackHolePotential(object):
@@ -119,7 +120,7 @@ class BinaryBlackHolesWithAGN(object):
             # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
-            print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
+            print('Time: {}'.format(sim_time.value_in(units.yr)))
 
             self.channel_from_grav_to_binaries.copy()
             if self.number_of_gas_particles > 0:
