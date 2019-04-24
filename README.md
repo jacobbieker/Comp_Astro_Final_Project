@@ -13,9 +13,13 @@ The idea behind the simulation, is that the binary blackholes will interact with
 Such mergers are potential candidates for the gravitational waves detected by LIGO.
 
 The total code consists of 7 files.
+
 SuperMAssiveBlackHole.py : Creates the SMBH at the center of the grid
+
 AccretionDisk.py : Creates a disk, using the ProtoPlanetaryDisk in AMUSE
+
 BinaryBlackHole.py : Creates a binary blackhole pair and sets it in orbit around the center of mass. It then sets the center of mass of the binary in orbit around the SMBH.
+
 BinaryBlackHolesWithAGN.py : Calls the aforementioned classes to create the system to be simulated.
 Gadget2_Gravity.py : Is an extended version of Gadget2 AMUSE package, to include the function: get_gravity_at_point for the gravitational interaction of the disk with the binaries
 main.py : Wraps up everything to be ran for the simulation
