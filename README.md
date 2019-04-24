@@ -14,7 +14,7 @@ The idea behind the simulation, is that the binary blackholes will interact with
 
 The total code consists of 7 files.
 
-__SuperMAssiveBlackHole.py__ : Creates the SMBH at the center of the grid
+__SuperMassiveBlackHole.py__ : Creates the SMBH at the center of the grid
 
 __AccretionDisk.py__ : Creates a disk, using the ProtoPlanetaryDisk in AMUSE
 
