@@ -74,6 +74,7 @@ class BinaryBlackHolesWithAGN(object):
         # Generate the binary locations and masses
         self.all_grav_particles = Particles()
         self.generate_binaries()
+        self.all_grav_particles.add_particle(self.smbh.super_massive_black_hole)
         self.gravity_converter = nbody_system.nbody_to_si(self.all_grav_particles.mass.sum(), self.all_grav_particles.virial_radius())
 
         # Now add them to a combined gravity code
@@ -156,10 +157,10 @@ class BinaryBlackHolesWithAGN(object):
         Bridge between disk and binaries one way (disk affects binaries)
         :return:
         """
-
-        self.bridge = Bridge(use_threading=True, verbose=True)
-        self.bridge.timestep = timestep
-        self.bridge.add_system(self.grav_code, (self.smbh_potential,))
+        self.bridge = self.grav_code
+        #self.bridge = Bridge(use_threading=True, verbose=True)
+        #self.bridge.timestep = timestep
+        #self.bridge.add_system(self.grav_code, (self.smbh_potential,))
         if self.number_of_gas_particles > 0:
             self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
 
