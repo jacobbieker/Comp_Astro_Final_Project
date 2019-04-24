@@ -9,7 +9,6 @@ from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
 from itertools import izip
 
-
 def grouped(iterable, n):
     return izip(*[iter(iterable)] * n)
 
@@ -106,7 +105,6 @@ class BinaryBlackHolesWithAGN(object):
 
         while sim_time < end_time:
             # Now extract information such as inclination to each other and the disk
-
             # Now extract information
             write_set_to_file(self.all_grav_particles,
                               self.filename + "_Particles_{}_Binaries_{}_Gas_AGN.h5".format(self.number_of_binaries,
