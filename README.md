@@ -10,7 +10,7 @@ __Contributors__:   Giannis Politopoulos,
 
 ### Summary
 The aim of this project, is to simulate an AGN around which, there is a massive disk and a number of binary stellar-mass blackholes. The AGN consists of a SMBH ~1e6 MSun and the binary blackholes ~30 MSun whilst the disk ~10% of the SMBH mass.
-The idea behind the simulation, is that the binary blackholes will interact with the AGN disk while orbiting the SMBH, lose energy hence reducing their orbital period and semi major axis. This effect becomes greater the closer the binary blackholes get resulting to their merging. Such mergers are potential candidates for the gravitational waves detected by LIGO.
+The idea behind the simulation, is that the binary blackholes will interact with the AGN disk while orbiting the SMBH, lose energy hence reducing their orbital period and semi major axis. This effect becomes greater the closer the binary blackholes get, resulting to their merging. Such mergers are potential candidates for the gravitational waves detected by LIGO.
 
 The total code consists of 7 files.
 
