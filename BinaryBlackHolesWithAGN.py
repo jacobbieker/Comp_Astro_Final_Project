@@ -78,7 +78,7 @@ class BinaryBlackHolesWithAGN(object):
 
         # Now add them to a combined gravity code
         self.grav_code = Huayno(self.gravity_converter, number_of_workers=number_of_grav_workers)
-        self.grav_code.timestep = 100 | units.yr
+        self.grav_code.timestep = 5 | units.yr
 
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
@@ -103,7 +103,8 @@ class BinaryBlackHolesWithAGN(object):
             all_sim_particles = self.bridge.particles
             print(len(all_sim_particles))
             # Now extract information
-            write_set_to_file(all_sim_particles, self.filename+"_Particles_{}_Binaries_{}_Gas_AGN.hdf5".format(self.number_of_binaries, self.number_of_gas_particles), "hdf5")
+            write_set_to_file(self.all_grav_particles, self.filename+"_Particles_{}_Binaries_{}_Gas_AGN.h5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
+            write_set_to_file(self.disk.gas_particles, self.filename+"_Gas_{}_Binaries_{}_Gas_AGN.h5".format(self.number_of_binaries, self.number_of_gas_particles), "amuse")
             # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)

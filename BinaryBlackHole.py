@@ -76,7 +76,7 @@ class BinaryBlackHole(object):
             central_blackhole_mass,
             self.initial_outer_semi_major_axis,
             self.initial_outer_eccentricity,
-            time_to_advance=np.random.uniform(min(0.001, self.orbital_period.value_in(units.day)) , self.orbital_period.value_in(units.day), size=1) | units.day)
+            time_to_advance=(self.orbital_period/2.))
 
     def get_orbital_period(self, orbital_separation, total_mass):
         return 2 * np.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()

@@ -4,7 +4,6 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 import numpy as np
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 
-
 class AccretionDisk(object):
     """
     This class creates an accretion disk around a central particle, ideally a black hole
