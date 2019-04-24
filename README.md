@@ -33,29 +33,29 @@ The simulation is ran through AMUSE by running the __main.py__ file. The simulat
 
 __The main parameters are:__ 
 
-  mass_of_central_black_hole,	_default=1000000.0 MSun_
+  **mass_of_central_black_hole**,	_default=1000000.0 MSun_
   
-  number_of_binaries,	_default=50_
+  **number_of_binaries**,	_default=50_
   
-  number_of_gas_particles,	_default=100000_
+  **number_of_gas_particles**,	_default=100000_
   
-  end_time,	_default=10 Myr_
+**end_time**,	_default=10 Myr_
   
-  blackhole_mass,	_default=30 MSun_
+  **blackhole_mass**,	_default=30 MSun_
   
-  gravity_timestep,	_default=100 yr_
+  **gravity_timestep**,	_default=100 yr_
   
-  bridge_timestep,	_default=0.1 Myr_
+  **bridge_timestep**,	_default=0.1 Myr_
   
-  smbh_as_potential,	_default=False_
+  **smbh_as_potential**,	_default=False_
   
-  binaries_affect_disk,	_default=False_
+  **binaries_affect_disk**,	_default=False_
   
-  disk_mass_fraction,	_default=0.1_
+  **disk_mass_fraction**,	_default=0.1_
   
-  number_of_hydro_workers,	_default=6_
+  **number_of_hydro_workers**,	_default=6_
   
-  number_of_grav_workers,	_default=12_
+  **number_of_grav_workers**,	_default=12_
   
-  filename,	_default=BinaryBlackHoles_
+**filename**,	_default=BinaryBlackHoles_
 
