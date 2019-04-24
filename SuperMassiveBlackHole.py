@@ -1,13 +1,11 @@
 from __future__ import division, print_function
-from AccretionDisk import AccretionDisk
-import numpy as np
 from amuse.units import units, constants
 from amuse.datamodel import Particle
 
 
 class SuperMassiveBlackHole(object):
 
-    def __init__(self, mass=1E8 | units.MSun):
+    def __init__(self, mass=1e6 | units.MSun):
         self.mass = mass
         self.super_massive_black_hole = Particle()
         self.super_massive_black_hole.mass = self.mass
