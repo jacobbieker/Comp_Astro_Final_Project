@@ -1,5 +1,5 @@
 # Comp_Astro_Final_Project
-Project: "Dynamical Hardening of Black Hole Binaries in Active Galactic Nuclei"
+## Project: "Dynamical Hardening of Black Hole Binaries in Active Galactic Nuclei"
 
 __Contributors__:   Giannis Politopoulos, 
 		Jacob Bieker, 
@@ -27,31 +27,33 @@ __main.py__ : Wraps up everything to be ran for the simulation
 
 __plotting.py__ : Uses everything saved in the simulation for plotting and animation
 
-To run the simulation : The simulation is ran through AMUSE by running the main.py file. The simulation parameters can be seen and tuned through the Option Parser implemented.
-The main parameters are: 
+## To run the simulation
+The simulation is ran through AMUSE by running the main.py file. The simulation parameters can be seen and tuned through the Option Parser implemented.
+
+__The main parameters are:__ 
   --mass_of_central_black_hole default=1000000.0 MSun
   
-  --number_of_binaries default=50
+  number_of_binaries,	default=50
   
-  --number_of_gas_particles default=100000
+  number_of_gas_particles,	default=100000
   
-  --end_time default=10 Myr
+  end_time,	default=10 Myr
   
-  --blackhole_mass default=30 MSun
+  blackhole_mass,	default=30 MSun
   
-  --gravity_timestep default=100 yr
+  gravity_timestep,	default=100 yr
   
-  --bridge_timestep default=0.1 Myr
+  bridge_timestep,	default=0.1 Myr
   
-  --smbh_as_potential default=False
+  smbh_as_potential,	default=False
   
-  --binaries_affect_disk default=False
+  binaries_affect_disk,	default=False
   
-  --disk_mass_fraction default=0.1
+  disk_mass_fraction,	default=0.1
   
-  --number_of_hydro_workers default=6
+  number_of_hydro_workers,	default=6
   
-  --number_of_grav_workers default=12
+  number_of_grav_workers,	default=12
   
-  --filename default=BinaryBlackHoles
+  filename,	default=BinaryBlackHoles
 
