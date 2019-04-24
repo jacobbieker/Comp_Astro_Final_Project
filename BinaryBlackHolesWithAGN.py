@@ -3,9 +3,8 @@ from AccretionDisk import AccretionDisk
 from SuperMassiveBlackHole import SuperMassiveBlackHole
 from BinaryBlackHole import BinaryBlackHole
 from amuse.couple.bridge import Bridge
-from amuse.datamodel import Particles, Particle
 from amuse.community.huayno.interface import Huayno
-import numpy as np
+import numpy
 from amuse.lab import units, nbody_system, constants, Particles
 from amuse.io import write_set_to_file
 
@@ -112,7 +111,7 @@ class BinaryBlackHolesWithAGN(object):
             # Now evolve the total model of hydro and gravity
             sim_time += self.timestep
             self.bridge.evolve_model(sim_time)
-            print('Time: {}'.format(sim_time.value_in(units.yr)))
+            print('Time: {}'.format(sim_time.value_in(units.yr)), flush=True)
 
             self.channel_from_grav_to_binaries.copy()
             if self.number_of_gas_particles > 0:
@@ -139,10 +138,11 @@ class BinaryBlackHolesWithAGN(object):
         Generate a number of blackhole binaries with random initial outer semi major axis and inclination within the boundaries
         """
         blackhole_masses = [self.blackhole_mass, self.blackhole_mass]
-        for _ in range(self.number_of_binaries):
+
+        for i in range(self.number_of_binaries):
             # Make sure to generate the binaries randomly but within the disk radius and not too close the SMBH
-            initial_outer_semi_major_axis = np.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
-            initial_outer_eccentricity = np.random.uniform(0, 180, 1)[0]
+            initial_outer_semi_major_axis = numpy.random.uniform(self.inner_boundary.value_in(self.outer_boundary.unit), self.outer_boundary.value_in(self.outer_boundary.unit), 1)[0]
+            initial_outer_eccentricity = numpy.random.uniform(0, 180, 1)[0]
             binaries = BinaryBlackHole(self.smbh.super_massive_black_hole.mass, mass_one=blackhole_masses[0], mass_two=blackhole_masses[1],
                                        initial_outer_semi_major_axis= initial_outer_semi_major_axis | (self.outer_boundary.unit),
                                        initial_outer_eccentricity=0.6,

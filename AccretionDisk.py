@@ -1,8 +1,9 @@
 from Gadget2_Gravity import Gadget2_Gravity
 from amuse.units import units, constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-import numpy as np
+import numpy
 from amuse.ext.protodisk import ProtoPlanetaryDisk
+
 
 class AccretionDisk(object):
     """
@@ -20,7 +21,7 @@ class AccretionDisk(object):
         self.disk_converter = disk_converter
         self.gen_convert = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
         self.code = Gadget2_Gravity(self.gadget_converter, number_of_workers=number_of_workers)
-        self.code.parameters.time_max = 2*self.gen_convert.to_generic(end_time)
+        self.code.parameters.time_max = 2 * self.gen_convert.to_generic(end_time)
         self.number_of_particles = number_of_particles
         self.disk_min = disk_min
         self.disk_max = disk_max
@@ -65,7 +66,7 @@ class AccretionDisk(object):
         """
 
         if z_plane is None:
-            x, y, z = np.indices((num_points + 1, num_points + 1, num_points + 1))
+            x, y, z = numpy.indices((num_points + 1, num_points + 1, num_points + 1))
             x = (x.flatten() - num_points / 2.) / num_points
             y = (y.flatten() - num_points / 2.) / num_points
             z = (z.flatten() - num_points / 2.) / num_points
@@ -74,10 +75,10 @@ class AccretionDisk(object):
             vy = 0. * x
             vz = 0. * x
         else:
-            x, y = np.indices((num_points + 1, num_points + 1))
+            x, y = numpy.indices((num_points + 1, num_points + 1))
             x = (x.flatten() - num_points / 2.) / num_points
             y = (y.flatten() - num_points / 2.) / num_points
-            z = z_plane * np.ones(x.shape)
+            z = z_plane * numpy.ones(x.shape)
 
             vx = 0. * x
             vy = 0. * x

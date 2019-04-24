@@ -1,5 +1,5 @@
 from __future__ import division, print_function
-import numpy as np
+import numpy
 from amuse.datamodel import Particles, Particle
 from amuse.ext.solarsystem import get_position
 from amuse.units import units, constants
@@ -50,8 +50,8 @@ class BinaryBlackHole(object):
         self.binary_min_orbital_period = self.get_orbital_period(
             1000000 * self.get_schwarzschild_radius(self.blackholes[0].mass), self.total_mass)
         # Restricting the initial inner orbital period
-        self.orbital_period = np.random.uniform(self.binary_min_orbital_period.value_in(units.yr),
-                                                self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
+        self.orbital_period = numpy.random.uniform(self.binary_min_orbital_period.value_in(units.yr),
+                                                   self.binary_max_orbital_period.value_in(units.yr), size=1) | units.yr
 
         self.inner_semi_major_axis = self.get_semi_major_axis(self.total_mass, self.orbital_period)
         self.inner_eccentricity = inner_eccentricity
@@ -79,10 +79,10 @@ class BinaryBlackHole(object):
             time_to_advance=(self.orbital_period/2.))
 
     def get_orbital_period(self, orbital_separation, total_mass):
-        return 2 * np.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()
+        return 2 * numpy.pi * (orbital_separation ** 3 / (constants.G * total_mass)).sqrt()
 
     def get_semi_major_axis(self, total_mass, orbital_period):
-        return (constants.G * total_mass * orbital_period ** 2 / (4 * np.pi ** 2)) ** (1. / 3.)
+        return (constants.G * total_mass * orbital_period ** 2 / (4 * numpy.pi ** 2)) ** (1. / 3.)
 
     def get_hill_radius(self, semi_major_axis, eccentricity, total_binary_mass, central_blackhole_mass):
         return semi_major_axis * (1 - eccentricity) * (total_binary_mass / (3 * central_blackhole_mass)) ** (1. / 3.)
@@ -155,33 +155,7 @@ class BinaryBlackHole(object):
                                                                         argument=argument_of_perhilion,
                                                                         longitude=longitude_of_ascending_node,
                                                                         delta_t=time_to_advance)
-        # Get the center of mass posiotion and velocity                                                                
+        # Get the center of mass position and velocity
         self.set_binary_location_and_velocity(binary_orbital_position, binary_orbital_velocity)
 
-        # merge_condition = self.set_merge_conditions(self.blackholes_distance, self.minimum_distance)
-        # if merge_condition:
-        #     print('binaries merged')
-        #     self.merge_blackholes()
-
         return semi_major_axis, eccentricity
-
-    # def set_merge_conditions(self, blackholes_distance, minimum_distance):
-    #     merge_condition = blackholes_distance < minimum_distance
-    #     return merge_condition
-
-    # def merge_blackholes(self, fraction_of_total_mass=0.95):
-    #     """
-    #     Merges the binary particles into a single particle after merging
-    #     :param fraction_of_total_mass: sets the mass of the merged blackhole
-    #     :return:
-    #     """
-    #
-    #     merged_blackhole_location = self.blackholes.center_of_mass()
-    #     merged_blackhole_velocity = self.blackholes.center_of_mass_velocity()
-    #     # Set the initial position and velocity of the merged_blackholes to be the same as the center of mass position and velocity
-    #     self.merged_blackhole[0].mass = fraction_of_total_mass * self.total_mass
-    #     self.merged_blackhole[0].position = merged_blackhole_location
-    #     self.merged_blackhole[0].velocity = merged_blackhole_velocity
-    #
-    #     self.blackholes.remove_particles(self.blackholes[0], self.blackholes[1])
-    #     self.blackholes.add_particle(self.merged_blackhole[0])
