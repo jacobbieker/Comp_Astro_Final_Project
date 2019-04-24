@@ -16,6 +16,16 @@ def new_option_parser():
                       help="No. of gas particles [%default]")
     result.add_option("--end_time", unit=units.Myr, dest="end_time", type="float", default=10 | units.Myr,
                       help="End time of simulation [%default]")
+    result.add_option("--blackhole_mass", unit=units.MSun, dest="blackhole_mass", type="float", default=30 | units.MSun,
+                      help="Mass of the Blackholes in the binaries [%default]")
+    result.add_option("--gravity_timestep", unit=units.yr, dest="gravity_timestep", type="float", default=100 | units.yr,
+                       help="Timestep for the gravity code [%default]")
+    result.add_option("--bridge_timestep", unit=units.yr, dest="bridge_timestep", type="float", default=0.1 | units.Myr,
+                      help="Timestep for the Bridge [%default]")
+    result.add_option("--smbh_as_potential", dest="smbh_as_potential", type="store_false", default=False,
+                      help="Whether to simulate the SMBH as a potential vs a particle [%default]")
+    result.add_option("--binaries_affect_disk", dest="binaries_affect_disk", type="store_false", default=False,
+                      help="Whether the binaries affect the accretion disk [%default]")
     result.add_option("--disk_mass_fraction", dest="disk_mass_fraction", type="float", default=0.1,
                       help="Disk mass fraction [%default]")
     result.add_option("--number_of_hydro_workers", dest="number_of_hydro_workers", type="int", default=6,
@@ -31,19 +41,29 @@ def main(mass_of_central_black_hole,
          number_of_binaries,
          number_of_gas_particles,
          end_time,
+         gravity_timestep,
+         bridge_timestep,
+         blackhole_mass,
+         smbh_as_potential,
+         binaries_affect_disk,
          disk_mass_fraction,
          number_of_hydro_workers,
          number_of_grav_workers,
          filename):
 
-    simulation = BinaryBlackHolesWithAGN(mass_of_central_black_hole,
-                                         number_of_binaries,
-                                         number_of_gas_particles,
-                                         disk_mass_fraction,
-                                         number_of_hydro_workers,
-                                         number_of_grav_workers,
-                                         end_time,
-                                         filename)
+    simulation = BinaryBlackHolesWithAGN(mass_of_central_black_hole=mass_of_central_black_hole,
+                                         number_of_binaries=number_of_binaries,
+                                         number_of_gas_particles=number_of_gas_particles,
+                                         disk_mass_fraction=disk_mass_fraction,
+                                         binaries_affect_disk=binaries_affect_disk,
+                                         smbh_as_potential=smbh_as_potential,
+                                         blackhole_masses =blackhole_mass,
+                                         timestep=bridge_timestep,
+                                         gravity_timestep=gravity_timestep,
+                                         end_time =end_time,
+                                         number_of_hydro_workers=number_of_hydro_workers,
+                                         number_of_grav_workers=number_of_grav_workers,
+                                         filename=filename)
 
 
 if __name__ == "__main__":

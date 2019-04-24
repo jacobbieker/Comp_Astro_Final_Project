@@ -39,11 +39,16 @@ class SuperMassiveBlackHolePotential(object):
 
 class BinaryBlackHolesWithAGN(object):
 
-    def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction, binaries_affect_disk=False,
-                 blackhole_masses = 30 | units.MSun, timestep=0.1 | units.Myr, end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1, steps_of_inclination = 18,
+    def __init__(self, mass_of_central_black_hole, number_of_binaries, number_of_gas_particles, disk_mass_fraction,
+                 binaries_affect_disk=False, smbh_as_potential=False,
+                 blackhole_masses = 30 | units.MSun, timestep=0.1 | units.Myr, gravity_timestep=100 | units.yr,
+                 end_time = 5 | units.Myr, number_of_hydro_workers=1, number_of_grav_workers=1,
+                 steps_of_inclination = 18,
                  disk_powerlaw=1, filename="BinaryBlackHoleWithAGN"):
         self.smbh = SuperMassiveBlackHole(mass=mass_of_central_black_hole)
-        self.smbh_potential = SuperMassiveBlackHolePotential(M=self.smbh.super_massive_black_hole.mass, R=self.smbh.radius)
+        self.smbh_as_potential = smbh_as_potential
+        if self.smbh_as_potential:
+            self.smbh_potential = SuperMassiveBlackHolePotential(M=self.smbh.super_massive_black_hole.mass, R=self.smbh.radius)
         self.inner_boundary = self.smbh.radius * 100
         self.outer_boundary = self.smbh.radius * 100000
         self.steps_of_inclination = steps_of_inclination
@@ -79,7 +84,7 @@ class BinaryBlackHolesWithAGN(object):
 
         # Now add them to a combined gravity code
         self.grav_code = Huayno(self.gravity_converter, number_of_workers=number_of_grav_workers)
-        self.grav_code.timestep = 1 | units.yr
+        self.grav_code.timestep = gravity_timestep
 
         # Adding them gravity
         self.grav_code.particles.add_particles(self.all_grav_particles)
@@ -157,12 +162,17 @@ class BinaryBlackHolesWithAGN(object):
         Bridge between disk and binaries one way (disk affects binaries)
         :return:
         """
-        self.bridge = self.grav_code
-        #self.bridge = Bridge(use_threading=True, verbose=True)
-        #self.bridge.timestep = timestep
-        #self.bridge.add_system(self.grav_code, (self.smbh_potential,))
-        if self.number_of_gas_particles > 0:
-            self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential ))
+        if self.number_of_gas_particles > 0 or self.smbh_as_potential:
+            self.bridge = Bridge(use_threading=True, verbose=True)
+            self.bridge.timestep = timestep
+            if self.smbh_as_potential:
+                self.bridge.add_system(self.grav_code, (self.smbh_potential,))
+            if self.number_of_gas_particles > 0:
+                self.bridge.add_system(self.hydro_code, (self.grav_code, self.smbh_potential,))
+                if self.binaries_affect_disk:
+                    self.bridge.add_system(self.grav_code, (self.hydro_code,))
+        else:
+            self.bridge = self.grav_code
 
         return self.bridge
 
